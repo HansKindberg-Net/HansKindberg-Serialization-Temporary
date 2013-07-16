@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace HansKindberg.Serialization.Tests.Mocks
+﻿namespace HansKindberg.Serialization.Tests.Mocks
 {
-	class AbstractMock
-	{
-	}
+	public abstract class AbstractMock {}
 }

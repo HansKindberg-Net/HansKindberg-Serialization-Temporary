@@ -1,11 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace HansKindberg.Serialization
 {
-	class Serializable
+	[Serializable]
+	public class Serializable : ISerializable
 	{
+		#region Constructors
+
+		protected Serializable(SerializationInfo info, StreamingContext context) {}
+
+		#endregion
+
+		#region Methods
+
+		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
+		public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			throw new NotImplementedException();
+		}
+
+		#endregion
 	}
 }
