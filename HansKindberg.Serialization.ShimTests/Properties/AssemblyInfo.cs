@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 internal static class AssemblyInfo
 // ReSharper restore CheckNamespace
 {
-    #region Fields
+	#region Fields
 
-    internal const string AssemblyName = "HansKindberg.Serialization.ShimTests";
+	internal const string AssemblyName = "HansKindberg.Serialization.ShimTests";
 
-    #endregion
+	#endregion
 }
