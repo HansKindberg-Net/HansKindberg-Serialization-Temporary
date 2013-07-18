@@ -7,29 +7,29 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace HansKindberg.Serialization.Tests
 {
 	[TestClass]
-	public class DefaultSerializableFactoryTest
+	public class DefaultSerializableResolverTest
 	{
 		#region Methods
 
-		private static DefaultSerializableFactory CreateDefaultSerializableFactory()
+		private static DefaultSerializableResolver CreateDefaultSerializableResolver()
 		{
-			return new DefaultSerializableFactory(new DefaultProxyBuilder());
+			return new DefaultSerializableResolver();
 		}
 
 		[TestMethod]
 		public void CreateUninitializedObject_WithGenericParameter_IfTheGenericParameterIsAnAbstractType_ShouldReturnAnObjectOfThatType()
 		{
-			AbstractMock abstractMock = CreateDefaultSerializableFactory().CreateUninitializedObject<AbstractMock>();
+			AbstractMock abstractMock = CreateDefaultSerializableResolver().CreateUninitializedObject<AbstractMock>();
 			Assert.IsNotNull(abstractMock);
 
-			AbstractWithoutParameterlessConstructorMock abstractWithoutParameterlessConstructorMock = CreateDefaultSerializableFactory().CreateUninitializedObject<AbstractWithoutParameterlessConstructorMock>();
+			AbstractWithoutParameterlessConstructorMock abstractWithoutParameterlessConstructorMock = CreateDefaultSerializableResolver().CreateUninitializedObject<AbstractWithoutParameterlessConstructorMock>();
 			Assert.IsNotNull(abstractWithoutParameterlessConstructorMock);
 		}
 
 		[TestMethod]
 		public void CreateUninitializedObject_WithGenericParameter_IfTheGenericParameterIsAnInterface_ShouldReturnAnObjectOfThatType()
 		{
-			IMock mock = CreateDefaultSerializableFactory().CreateUninitializedObject<IMock>();
+			IMock mock = CreateDefaultSerializableResolver().CreateUninitializedObject<IMock>();
 			Assert.IsNotNull(mock);
 		}
 
@@ -37,36 +37,36 @@ namespace HansKindberg.Serialization.Tests
 		[ExpectedException(typeof(NotSupportedException))]
 		public void CreateUninitializedObject_WithGenericParameter_IfTheGenericParameterIsOfATypeThatInheritsFromContextBoundObject_ShouldThrowANotSupportedException()
 		{
-			CreateDefaultSerializableFactory().CreateUninitializedObject<ContextBoundObjectMock>();
+			CreateDefaultSerializableResolver().CreateUninitializedObject<ContextBoundObjectMock>();
 		}
 
 		[TestMethod]
 		public void CreateUninitializedObject_WithGenericParameter_IfTheGenericParameterIsOfATypeThatInheritsFromMarshalByRefObject_ShouldReturnAnObjectOfThatType()
 		{
-			MarshalByRefObjectMock marshalByRefObjectMock = CreateDefaultSerializableFactory().CreateUninitializedObject<MarshalByRefObjectMock>();
+			MarshalByRefObjectMock marshalByRefObjectMock = CreateDefaultSerializableResolver().CreateUninitializedObject<MarshalByRefObjectMock>();
 			Assert.IsNotNull(marshalByRefObjectMock);
 		}
 
 		[TestMethod]
 		public void CreateUninitializedObject_WithGenericParameter_IfTheGenericParameterIsOfTypeString_ShouldReturnAnEmptyString()
 		{
-			Assert.AreEqual(string.Empty, CreateDefaultSerializableFactory().CreateUninitializedObject<string>());
+			Assert.AreEqual(string.Empty, CreateDefaultSerializableResolver().CreateUninitializedObject<string>());
 		}
 
 		[TestMethod]
 		public void CreateUninitializedObject_WithTypeParameter_IfTheTypeParameterValueIsAnAbstractType_ShouldReturnAnObjectOfThatType()
 		{
-			AbstractMock abstractMock = (AbstractMock) CreateDefaultSerializableFactory().CreateUninitializedObject(typeof(AbstractMock));
+			AbstractMock abstractMock = (AbstractMock) CreateDefaultSerializableResolver().CreateUninitializedObject(typeof(AbstractMock));
 			Assert.IsNotNull(abstractMock);
 
-			AbstractWithoutParameterlessConstructorMock abstractWithoutParameterlessConstructorMock = (AbstractWithoutParameterlessConstructorMock) CreateDefaultSerializableFactory().CreateUninitializedObject(typeof(AbstractWithoutParameterlessConstructorMock));
+			AbstractWithoutParameterlessConstructorMock abstractWithoutParameterlessConstructorMock = (AbstractWithoutParameterlessConstructorMock) CreateDefaultSerializableResolver().CreateUninitializedObject(typeof(AbstractWithoutParameterlessConstructorMock));
 			Assert.IsNotNull(abstractWithoutParameterlessConstructorMock);
 		}
 
 		[TestMethod]
 		public void CreateUninitializedObject_WithTypeParameter_IfTheTypeParameterValueIsAnInterface_ShouldReturnAnObjectOfThatType()
 		{
-			IMock mock = (IMock) CreateDefaultSerializableFactory().CreateUninitializedObject(typeof(IMock));
+			IMock mock = (IMock) CreateDefaultSerializableResolver().CreateUninitializedObject(typeof(IMock));
 			Assert.IsNotNull(mock);
 		}
 
@@ -76,7 +76,7 @@ namespace HansKindberg.Serialization.Tests
 		{
 			try
 			{
-				CreateDefaultSerializableFactory().CreateUninitializedObject(null);
+				CreateDefaultSerializableResolver().CreateUninitializedObject(null);
 			}
 			catch(ArgumentNullException argumentNullException)
 			{
@@ -89,20 +89,26 @@ namespace HansKindberg.Serialization.Tests
 		[ExpectedException(typeof(NotSupportedException))]
 		public void CreateUninitializedObject_WithTypeParameter_IfTheTypeParameterValueIsOfATypeThatInheritsFromContextBoundObject_ShouldThrowANotSupportedException()
 		{
-			CreateDefaultSerializableFactory().CreateUninitializedObject(typeof(ContextBoundObjectMock));
+			CreateDefaultSerializableResolver().CreateUninitializedObject(typeof(ContextBoundObjectMock));
 		}
 
 		[TestMethod]
 		public void CreateUninitializedObject_WithTypeParameter_IfTheTypeParameterValueIsOfATypeThatInheritsFromMarshalByRefObject_ShouldReturnAnObjectOfThatType()
 		{
-			MarshalByRefObjectMock marshalByRefObjectMock = (MarshalByRefObjectMock) CreateDefaultSerializableFactory().CreateUninitializedObject(typeof(MarshalByRefObjectMock));
+			MarshalByRefObjectMock marshalByRefObjectMock = (MarshalByRefObjectMock) CreateDefaultSerializableResolver().CreateUninitializedObject(typeof(MarshalByRefObjectMock));
 			Assert.IsNotNull(marshalByRefObjectMock);
 		}
 
 		[TestMethod]
 		public void CreateUninitializedObject_WithTypeParameter_IfTheTypeParameterValueIsOfTypeString_ShouldReturnAnEmptyString()
 		{
-			Assert.AreEqual(string.Empty, CreateDefaultSerializableFactory().CreateUninitializedObject(typeof(string)));
+			Assert.AreEqual(string.Empty, CreateDefaultSerializableResolver().CreateUninitializedObject(typeof(string)));
+		}
+
+		[TestMethod]
+		public void MoreTestsNeeded()
+		{
+			Assert.Inconclusive("More tests needed for {0}.", typeof(DefaultSerializableResolver));
 		}
 
 		[TestMethod]
@@ -131,6 +137,12 @@ namespace HansKindberg.Serialization.Tests
 		public void PrerequisiteTest_FormatterServices_GetUninitializedObject_IfTheTypeParameterValueIsOfTypeString_ShouldThrowAnArgumentException()
 		{
 			FormatterServices.GetUninitializedObject(typeof(string));
+		}
+
+		[TestMethod]
+		public void ProxyBuilder_ShouldReturnADefaultProxyBuilder()
+		{
+			Assert.IsTrue(new DefaultSerializableResolver().ProxyBuilder is DefaultProxyBuilder);
 		}
 
 		#endregion

@@ -1,5 +1,6 @@
 HansKindberg-Serialization
 ==========================
 
-http://www.codeproject.com/Articles/33345/Anonymous-Method-Serialization
-http://www.tomrochette.com/serializing-anything-in-c-using-extensions/
+Original code/idea
+------------------
+* [**Anonymous Method Serialization**, by Fredrik Norén](http://www.codeproject.com/KB/cs/AnonymousSerialization.aspx)
