@@ -56,16 +56,21 @@
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
     <Compile Include="CodeAnalysis\AssemblySuppressions.cs" />
+    <Compile Include="DefaultSerializableDelegateResolver.cs" />
+    <Compile Include="DefaultSerializableArrayResolver.cs" />
     <Compile Include="DefaultSerializableResolver.cs" />
-    <Compile Include="DefaultTypeValidator.cs" />
+    <Compile Include="DefaultSerializableResolverLocator.cs" />
     <Compile Include="Extensions\SerializationInfoExtension.cs" />
+    <Compile Include="ISerailizableArrayResolver.cs" />
     <Compile Include="ISerializableDelegateResolver.cs" />
     <Compile Include="ISerializableResolver.cs" />
-    <Compile Include="ITypeValidator.cs" />
+    <Compile Include="ISerializableResolverLocator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serializable.cs" />
+    <Compile Include="SerializableArray.cs" />
     <Compile Include="SerializableDelegate.cs" />
-    <Compile Include="SerializableDelegateResolver.cs" />
+    <Compile Include="SerializableResolver.cs" />
+    <Compile Include="SerializableResolverLocator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\HansKindberg.snk">

@@ -1,4 +1,5 @@
 ﻿using System.Web;
+using Castle.DynamicProxy;
 using HansKindberg.Serialization.IntegrationTests.Helpers.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -11,7 +12,7 @@ namespace HansKindberg.Serialization.IntegrationTests
 
 		private static DefaultSerializableResolver CreateDefaultSerializableResolver()
 		{
-			return new DefaultSerializableResolver();
+			return new DefaultSerializableResolver(new DefaultProxyBuilder());
 		}
 
 		[TestMethod]

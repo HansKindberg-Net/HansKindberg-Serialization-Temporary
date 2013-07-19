@@ -8,49 +8,68 @@ namespace HansKindberg.Serialization
 	/// This code is originally from http://www.codeproject.com/KB/cs/AnonymousSerialization.aspx.
 	/// </summary>
 	[Serializable]
+	public class Serializable : Serializable<object>
+	{
+		#region Constructors
+
+		public Serializable(object instance) : base(instance) {}
+		protected internal Serializable(object instance, ISerializableResolver serializableResolver) : base(instance, serializableResolver) {}
+		protected Serializable(SerializationInfo info, StreamingContext context) : base(info, context) {}
+		protected internal Serializable(SerializationInfo info, StreamingContext context, string index) : base(info, context, index) {}
+		protected internal Serializable(SerializationInfo info, StreamingContext context, ISerializableResolver serializableResolver) : base(info, context, serializableResolver) {}
+		protected internal Serializable(SerializationInfo info, StreamingContext context, ISerializableResolver serializableResolver, string index) : base(info, context, serializableResolver, index) {}
+
+		#endregion
+	}
+
+	/// <summary>
+	/// This code is originally from http://www.codeproject.com/KB/cs/AnonymousSerialization.aspx.
+	/// </summary>
+	[Serializable]
 	public class Serializable<T> : ISerializable
 	{
 		#region Fields
 
 		private readonly T _instance;
-		private readonly ISerializableResolver _serializableResolver;
-		private const string _serializableResolverSerializationInformationName = "SerializableResolver";
+		private ISerializableResolver _serializableResolver;
 
 		#endregion
 
 		#region Constructors
 
-		public Serializable(T instance, ISerializableResolver serializableResolver)
+		public Serializable(T instance)
 		{
 			if(Equals(instance, null))
 				throw new ArgumentNullException("instance");
 
+			this._instance = instance;
+		}
+
+		protected internal Serializable(T instance, ISerializableResolver serializableResolver) : this(instance)
+		{
 			if(serializableResolver == null)
 				throw new ArgumentNullException("serializableResolver");
 
-			if(!serializableResolver.GetType().IsSerializable)
-				throw new ArgumentException("The serializable resolver has to be serializable.", "serializableResolver");
-
-			this._instance = instance;
 			this._serializableResolver = serializableResolver;
 		}
 
-		protected Serializable(SerializationInfo info, StreamingContext context)
+		protected Serializable(SerializationInfo info, StreamingContext context) : this(info, context, string.Empty) {}
+
+		protected internal Serializable(SerializationInfo info, StreamingContext context, string index)
 		{
-			if(info == null)
-				throw new ArgumentNullException("info");
+			this._instance = this.SerializableResolver.GetInstance<T>(info, context, index);
+		}
 
-			try
-			{
-				// The serializable resolver have to be serializable. We could also handle it by using some kind of service-locator for the serializable resolver here instead.
-				this._serializableResolver = (ISerializableResolver) info.GetValue(_serializableResolverSerializationInformationName, typeof(ISerializableResolver));
-			}
-			catch(Exception exception)
-			{
-				throw new ArgumentException("The serializable resolver could not be retrieved from the serialization-information.", "info", exception);
-			}
+		protected internal Serializable(SerializationInfo info, StreamingContext context, ISerializableResolver serializableResolver) : this(info, context, serializableResolver, string.Empty) {}
 
-			this._instance = this._serializableResolver.GetInstance<T>(info);
+		protected internal Serializable(SerializationInfo info, StreamingContext context, ISerializableResolver serializableResolver, string index)
+		{
+			if(serializableResolver == null)
+				throw new ArgumentNullException("serializableResolver");
+
+			this._serializableResolver = serializableResolver;
+
+			this._instance = this.SerializableResolver.GetInstance<T>(info, context, index);
 		}
 
 		#endregion
@@ -62,9 +81,9 @@ namespace HansKindberg.Serialization
 			get { return this._instance; }
 		}
 
-		protected internal virtual ISerializableResolver SerializableResolver
+		protected internal ISerializableResolver SerializableResolver
 		{
-			get { return this._serializableResolver; }
+			get { return this._serializableResolver ?? (this._serializableResolver = SerializableResolverLocator.Instance.SerializableResolver); }
 		}
 
 		#endregion
@@ -74,12 +93,12 @@ namespace HansKindberg.Serialization
 		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
 		public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
-			if(info == null)
-				throw new ArgumentNullException("info");
+			this.GetObjectData(info, context, string.Empty);
+		}
 
-			info.AddValue(_serializableResolverSerializationInformationName, this.SerializableResolver);
-
-			this.SerializableResolver.SetInstance(this.Instance, info);
+		public virtual void GetObjectData(SerializationInfo info, StreamingContext context, string index)
+		{
+			this.SerializableResolver.SetInstance(this.Instance, info, context, index);
 		}
 
 		#endregion

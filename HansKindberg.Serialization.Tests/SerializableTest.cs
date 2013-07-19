@@ -59,15 +59,17 @@ namespace HansKindberg.Serialization.Tests
 		{
 			object instance = new object();
 			SerializationInfo serializationInformation = new SerializationInfo(typeof(object), Mock.Of<IFormatterConverter>());
+			StreamingContext streamingContext = new StreamingContext();
+			string index = string.Empty;
 			Mock<ISerializableResolver> serializableResolverMock = new Mock<ISerializableResolver>();
-			serializableResolverMock.Setup(serializableResolver => serializableResolver.GetInstance<object>(serializationInformation)).Returns(instance);
+			serializableResolverMock.Setup(serializableResolver => serializableResolver.GetInstance<object>(serializationInformation, streamingContext, index)).Returns(instance);
 			serializationInformation.AddValue(_serializableResolverSerializationInformationName, serializableResolverMock.Object);
 
-			serializableResolverMock.Verify(serializableResolver => serializableResolver.GetInstance<object>(serializationInformation), Times.Never());
+			serializableResolverMock.Verify(serializableResolver => serializableResolver.GetInstance<object>(serializationInformation, streamingContext, index), Times.Never());
 
 			Assert.AreEqual(instance, new SerializableMock<object>(serializationInformation, new StreamingContext()).Instance);
 
-			serializableResolverMock.Verify(serializableResolver => serializableResolver.GetInstance<object>(serializationInformation), Times.Once());
+			serializableResolverMock.Verify(serializableResolver => serializableResolver.GetInstance<object>(serializationInformation, streamingContext, index), Times.Once());
 		}
 
 		[TestMethod]
@@ -84,24 +86,6 @@ namespace HansKindberg.Serialization.Tests
 			catch(ArgumentNullException argumentNullException)
 			{
 				if(argumentNullException.ParamName == "instance")
-					throw;
-			}
-		}
-
-		[TestMethod]
-		[ExpectedException(typeof(ArgumentException))]
-		[SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", MessageId = "HansKindberg.Serialization.Serializable`1<System.Object>")]
-		public void Constructor_WithTwoParameters_IfTheSerializableResolverParameterValueIsNotSerializable_ShouldThrowAnArgumentException()
-		{
-			try
-			{
-				// ReSharper disable ObjectCreationAsStatement
-				new Serializable<object>(new object(), new UnserializableSerializableResolverMock());
-				// ReSharper restore ObjectCreationAsStatement
-			}
-			catch(ArgumentException argumentException)
-			{
-				if(argumentException.Message.StartsWith("The serializable resolver has to be serializable.", StringComparison.Ordinal) && argumentException.ParamName == "serializableResolver")
 					throw;
 			}
 		}
@@ -125,12 +109,6 @@ namespace HansKindberg.Serialization.Tests
 		}
 
 		[TestMethod]
-		public void Constructor_WithTwoParameters_IfTheSerializableResolverParameterValueIsSerializable_ShouldNotThrowAnArgumentException()
-		{
-			Assert.IsNotNull(new Serializable<object>(new object(), new SerializableSerializableResolverMock()));
-		}
-
-		[TestMethod]
 		public void Constructor_WithTwoParameters_ShouldSetTheInstanceProperty()
 		{
 			object instance = new object();
@@ -148,7 +126,7 @@ namespace HansKindberg.Serialization.Tests
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void GetObjectData_IfTheSerializationInfoParameterValueIsNull_ShouldThrowAnArgumentNullException()
 		{
-			Serializable<object> serializable = new Serializable<object>(new object(), new SerializableSerializableResolverMock());
+			Serializable<object> serializable = new Serializable<object>(new object(), Mock.Of<ISerializableResolver>());
 			try
 			{
 				// ReSharper disable AssignNullToNotNullAttribute
@@ -163,18 +141,6 @@ namespace HansKindberg.Serialization.Tests
 		}
 
 		[TestMethod]
-		public void GetObjectData_ShouldAddTheSerializableResolverToTheSerializationInformation()
-		{
-			ISerializableResolver serializableResolver = new SerializableSerializableResolverMock();
-			Serializable<object> serializable = new Serializable<object>(new object(), serializableResolver);
-			SerializationInfo serializationInformation = new SerializationInfo(typeof(object), Mock.Of<IFormatterConverter>());
-			Assert.AreEqual(0, serializationInformation.MemberCount);
-			serializable.GetObjectData(serializationInformation, new StreamingContext());
-			Assert.AreEqual(1, serializationInformation.MemberCount);
-			Assert.AreEqual(serializableResolver, serializationInformation.GetValue(_serializableResolverSerializationInformationName, typeof(ISerializableResolver)));
-		}
-
-		[TestMethod]
 		public void GetObjectData_ShouldCallSetInstanceOfTheSerializableResolver()
 		{
 			// ReSharper disable ImplicitlyCapturedClosure
@@ -182,15 +148,17 @@ namespace HansKindberg.Serialization.Tests
 			const string instanceSerializationInformationName = "Instance";
 			object instance = new object();
 			SerializationInfo serializationInformation = new SerializationInfo(typeof(object), Mock.Of<IFormatterConverter>());
+			StreamingContext streamingContext = new StreamingContext();
+			string index = string.Empty;
 			Mock<ISerializableResolver> serializableResolverMock = new Mock<ISerializableResolver>();
-			serializableResolverMock.Setup(serializableResolver => serializableResolver.SetInstance(instance, serializationInformation)).Callback(() => serializationInformation.AddValue(instanceSerializationInformationName, instance));
+			serializableResolverMock.Setup(serializableResolver => serializableResolver.SetInstance(instance, serializationInformation, streamingContext, index)).Callback(() => serializationInformation.AddValue(instanceSerializationInformationName, instance));
 
-			serializableResolverMock.Verify(serializableResolver => serializableResolver.SetInstance(instance, serializationInformation), Times.Never());
+			serializableResolverMock.Verify(serializableResolver => serializableResolver.SetInstance(instance, serializationInformation, streamingContext, index), Times.Never());
 
 			new Serializable<object>(instance, serializableResolverMock.Object).GetObjectData(serializationInformation, new StreamingContext());
 			Assert.AreEqual(instance, serializationInformation.GetValue(instanceSerializationInformationName, typeof(object)));
 
-			serializableResolverMock.Verify(serializableResolver => serializableResolver.SetInstance(instance, serializationInformation), Times.Once());
+			serializableResolverMock.Verify(serializableResolver => serializableResolver.SetInstance(instance, serializationInformation, streamingContext, index), Times.Once());
 
 			// ReSharper restore ImplicitlyCapturedClosure
 		}

@@ -88,9 +88,8 @@
     <Compile Include="Mocks\IMock.cs" />
     <Compile Include="Mocks\MarshalByRefObjectMock.cs" />
     <Compile Include="Mocks\SerializableMock.cs" />
-    <Compile Include="Mocks\SerializableSerializableResolverMock.cs" />
-    <Compile Include="Mocks\UnserializableSerializableResolverMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SerializableDelegateTest.cs" />
     <Compile Include="SerializableTest.cs" />
   </ItemGroup>
   <ItemGroup>

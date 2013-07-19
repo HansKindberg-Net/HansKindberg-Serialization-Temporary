@@ -11,9 +11,16 @@ namespace HansKindberg.Serialization.Tests
 	{
 		#region Methods
 
+		[TestMethod]
+		public void Constructor_ShouldSetTheProxyBuilderProperty()
+		{
+			IProxyBuilder proxyBuilder = new DefaultProxyBuilder();
+			Assert.AreEqual(proxyBuilder, new DefaultSerializableResolver(proxyBuilder).ProxyBuilder);
+		}
+
 		private static DefaultSerializableResolver CreateDefaultSerializableResolver()
 		{
-			return new DefaultSerializableResolver();
+			return new DefaultSerializableResolver(new DefaultProxyBuilder());
 		}
 
 		[TestMethod]
@@ -137,12 +144,6 @@ namespace HansKindberg.Serialization.Tests
 		public void PrerequisiteTest_FormatterServices_GetUninitializedObject_IfTheTypeParameterValueIsOfTypeString_ShouldThrowAnArgumentException()
 		{
 			FormatterServices.GetUninitializedObject(typeof(string));
-		}
-
-		[TestMethod]
-		public void ProxyBuilder_ShouldReturnADefaultProxyBuilder()
-		{
-			Assert.IsTrue(new DefaultSerializableResolver().ProxyBuilder is DefaultProxyBuilder);
 		}
 
 		#endregion
