@@ -76,7 +76,7 @@ namespace HansKindberg.Serialization
 			}
 		}
 
-		public virtual T GetInstance<T>(SerializationInfo serializationInformation, StreamingContext streamingContext, string index)
+		public virtual T InstanceFromSerializationInformation<T>(SerializationInfo serializationInformation, StreamingContext streamingContext, string index)
 		{
 			return (T) this.GetInstance(serializationInformation, streamingContext, index);
 		}
@@ -126,7 +126,7 @@ namespace HansKindberg.Serialization
 			}
 		}
 
-		public virtual void SetInstance<T>(T instance, SerializationInfo serializationInformation, StreamingContext streamingContext, string index)
+		public virtual void InstanceToSerializationInformation<T>(T instance, SerializationInfo serializationInformation, StreamingContext streamingContext, string index)
 		{
 			this.SetInstance((object) instance, serializationInformation, streamingContext, index);
 		}

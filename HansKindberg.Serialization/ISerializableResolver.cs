@@ -6,8 +6,8 @@ namespace HansKindberg.Serialization
 	{
 		#region Methods
 
-		T GetInstance<T>(SerializationInfo serializationInformation, StreamingContext streamingContext, string index);
-		void SetInstance<T>(T instance, SerializationInfo serializationInformation, StreamingContext streamingContext, string index);
+		T InstanceFromSerializationInformation<T>(SerializationInfo serializationInformation, StreamingContext streamingContext, string index);
+		void InstanceToSerializationInformation<T>(T instance, SerializationInfo serializationInformation, StreamingContext streamingContext, string index);
 
 		#endregion
 	}

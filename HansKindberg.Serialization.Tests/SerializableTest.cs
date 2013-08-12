@@ -62,14 +62,14 @@ namespace HansKindberg.Serialization.Tests
 			StreamingContext streamingContext = new StreamingContext();
 			string index = string.Empty;
 			Mock<ISerializableResolver> serializableResolverMock = new Mock<ISerializableResolver>();
-			serializableResolverMock.Setup(serializableResolver => serializableResolver.GetInstance<object>(serializationInformation, streamingContext, index)).Returns(instance);
+			serializableResolverMock.Setup(serializableResolver => serializableResolver.InstanceFromSerializationInformation<object>(serializationInformation, streamingContext, index)).Returns(instance);
 			serializationInformation.AddValue(_serializableResolverSerializationInformationName, serializableResolverMock.Object);
 
-			serializableResolverMock.Verify(serializableResolver => serializableResolver.GetInstance<object>(serializationInformation, streamingContext, index), Times.Never());
+			serializableResolverMock.Verify(serializableResolver => serializableResolver.InstanceFromSerializationInformation<object>(serializationInformation, streamingContext, index), Times.Never());
 
 			Assert.AreEqual(instance, new SerializableMock<object>(serializationInformation, new StreamingContext()).Instance);
 
-			serializableResolverMock.Verify(serializableResolver => serializableResolver.GetInstance<object>(serializationInformation, streamingContext, index), Times.Once());
+			serializableResolverMock.Verify(serializableResolver => serializableResolver.InstanceFromSerializationInformation<object>(serializationInformation, streamingContext, index), Times.Once());
 		}
 
 		[TestMethod]
@@ -151,14 +151,14 @@ namespace HansKindberg.Serialization.Tests
 			StreamingContext streamingContext = new StreamingContext();
 			string index = string.Empty;
 			Mock<ISerializableResolver> serializableResolverMock = new Mock<ISerializableResolver>();
-			serializableResolverMock.Setup(serializableResolver => serializableResolver.SetInstance(instance, serializationInformation, streamingContext, index)).Callback(() => serializationInformation.AddValue(instanceSerializationInformationName, instance));
+			serializableResolverMock.Setup(serializableResolver => serializableResolver.InstanceToSerializationInformation(instance, serializationInformation, streamingContext, index)).Callback(() => serializationInformation.AddValue(instanceSerializationInformationName, instance));
 
-			serializableResolverMock.Verify(serializableResolver => serializableResolver.SetInstance(instance, serializationInformation, streamingContext, index), Times.Never());
+			serializableResolverMock.Verify(serializableResolver => serializableResolver.InstanceToSerializationInformation(instance, serializationInformation, streamingContext, index), Times.Never());
 
 			new Serializable<object>(instance, serializableResolverMock.Object).GetObjectData(serializationInformation, new StreamingContext());
 			Assert.AreEqual(instance, serializationInformation.GetValue(instanceSerializationInformationName, typeof(object)));
 
-			serializableResolverMock.Verify(serializableResolver => serializableResolver.SetInstance(instance, serializationInformation, streamingContext, index), Times.Once());
+			serializableResolverMock.Verify(serializableResolver => serializableResolver.InstanceToSerializationInformation(instance, serializationInformation, streamingContext, index), Times.Once());
 
 			// ReSharper restore ImplicitlyCapturedClosure
 		}

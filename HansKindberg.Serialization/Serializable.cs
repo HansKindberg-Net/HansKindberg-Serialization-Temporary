@@ -57,7 +57,7 @@ namespace HansKindberg.Serialization
 
 		protected internal Serializable(SerializationInfo info, StreamingContext context, string index)
 		{
-			this._instance = this.SerializableResolver.GetInstance<T>(info, context, index);
+			this._instance = this.SerializableResolver.InstanceFromSerializationInformation<T>(info, context, index);
 		}
 
 		protected internal Serializable(SerializationInfo info, StreamingContext context, ISerializableResolver serializableResolver) : this(info, context, serializableResolver, string.Empty) {}
@@ -69,7 +69,7 @@ namespace HansKindberg.Serialization
 
 			this._serializableResolver = serializableResolver;
 
-			this._instance = this.SerializableResolver.GetInstance<T>(info, context, index);
+			this._instance = this.SerializableResolver.InstanceFromSerializationInformation<T>(info, context, index);
 		}
 
 		#endregion
@@ -98,7 +98,7 @@ namespace HansKindberg.Serialization
 
 		public virtual void GetObjectData(SerializationInfo info, StreamingContext context, string index)
 		{
-			this.SerializableResolver.SetInstance(this.Instance, info, context, index);
+			this.SerializableResolver.InstanceToSerializationInformation(this.Instance, info, context, index);
 		}
 
 		#endregion
