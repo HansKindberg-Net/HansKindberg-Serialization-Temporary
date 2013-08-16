@@ -90,10 +90,9 @@ namespace HansKindberg.Serialization.IntegrationTests
 		}
 
 		[TestMethod]
-		public void System_Collections_ArrayList_ShouldNotBeSerializable()
+		public void System_Collections_ArrayList_ShouldBeSerializable()
 		{
-			ArrayList arrayList = new ArrayList();
-			arrayList.Add("Test");
+			ArrayList arrayList = new ArrayList {"Test"};
 			Serializable<ArrayList> serializableArrayList = new Serializable<ArrayList>(arrayList);
 			string binarySerializedSerializableArrayList = serializableArrayList.SerializeBinary();
 			Serializable<ArrayList> deserializedSerializableArrayList = (Serializable<ArrayList>) ObjectExtension.DeserializeBinary(binarySerializedSerializableArrayList);

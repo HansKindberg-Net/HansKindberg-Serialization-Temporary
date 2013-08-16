@@ -69,7 +69,7 @@
     <Compile Include="Serializable.cs" />
     <Compile Include="SerializableArray.cs" />
     <Compile Include="SerializableDelegate.cs" />
-    <Compile Include="SerializableResolver.cs" />
+    <Compile Include="SerializableField.cs" />
     <Compile Include="SerializableResolverLocator.cs" />
   </ItemGroup>
   <ItemGroup>

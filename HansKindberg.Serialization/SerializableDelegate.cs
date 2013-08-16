@@ -1,116 +1,39 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Runtime.Serialization;
-using System.Security.Permissions;
 
 namespace HansKindberg.Serialization
 {
-	/// <summary>
-	/// Makes delegates serializable where possible.
-	/// This code is originally from http://www.codeproject.com/KB/cs/AnonymousSerialization.aspx.
-	/// </summary>
 	[Serializable]
 	[SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
-	public class SerializableDelegate : SerializableDelegate<object>
+	public class SerializableDelegate : Serializable
 	{
 		#region Constructors
 
-		public SerializableDelegate(object @delegate) : base(@delegate) {}
-		protected internal SerializableDelegate(object @delegate, ISerializableDelegateResolver serializableDelegateResolver) : base(@delegate, serializableDelegateResolver) {}
-		protected SerializableDelegate(SerializationInfo info, StreamingContext context) : base(info, context) {}
-		protected internal SerializableDelegate(SerializationInfo info, StreamingContext context, string index) : base(info, context, index) {}
-		protected internal SerializableDelegate(SerializationInfo info, StreamingContext context, ISerializableDelegateResolver serializableDelegateResolver) : base(info, context, serializableDelegateResolver) {}
-		protected internal SerializableDelegate(SerializationInfo info, StreamingContext context, ISerializableDelegateResolver serializableDelegateResolver, string index) : base(info, context, serializableDelegateResolver, index) {}
-
-		#endregion
-	}
-
-	/// <summary>
-	/// Makes delegates serializable where possible.
-	/// This code is originally from http://www.codeproject.com/KB/cs/AnonymousSerialization.aspx.
-	/// </summary>
-	[Serializable]
-	[SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
-	public class SerializableDelegate<T> : ISerializable
-	{
-		#region Fields
-
-		private readonly T _delegate;
-		private ISerializableDelegateResolver _serializableDelegateResolver;
-
-		#endregion
-
-		#region Constructors
-
-		public SerializableDelegate(T @delegate)
-		{
-			if(Equals(@delegate, null))
-				throw new ArgumentNullException("delegate");
-
-			Type type = @delegate.GetType();
-
-			if(!typeof(Delegate).IsAssignableFrom(type))
-				throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The type \"{0}\" must be a delegate ({1}).", type.FullName, typeof(Delegate)), "delegate");
-
-			this._delegate = @delegate;
-		}
-
-		protected internal SerializableDelegate(T @delegate, ISerializableDelegateResolver serializableDelegateResolver) : this(@delegate)
-		{
-			if(serializableDelegateResolver == null)
-				throw new ArgumentNullException("serializableDelegateResolver");
-
-			this._serializableDelegateResolver = serializableDelegateResolver;
-		}
-
-		protected SerializableDelegate(SerializationInfo info, StreamingContext context) : this(info, context, string.Empty) {}
-
-		protected internal SerializableDelegate(SerializationInfo info, StreamingContext context, string index)
-		{
-			this._delegate = this.SerializableDelegateResolver.GetDelegate<T>(info, context, index);
-		}
-
-		protected internal SerializableDelegate(SerializationInfo info, StreamingContext context, ISerializableDelegateResolver serializableDelegateResolver) : this(info, context, serializableDelegateResolver, string.Empty) {}
-
-		protected internal SerializableDelegate(SerializationInfo info, StreamingContext context, ISerializableDelegateResolver serializableDelegateResolver, string index)
-		{
-			if(serializableDelegateResolver == null)
-				throw new ArgumentNullException("serializableDelegateResolver");
-
-			this._serializableDelegateResolver = serializableDelegateResolver;
-
-			this._delegate = this.SerializableDelegateResolver.GetDelegate<T>(info, context, index);
-		}
+		public SerializableDelegate(Delegate @delegate) : base(@delegate, SerializableResolverLocator.Instance.SerializableResolver) {}
+		protected internal SerializableDelegate(Delegate @delegate, ISerializableResolver serializableResolver) : base(@delegate, serializableResolver) {}
 
 		#endregion
 
 		#region Properties
 
-		[SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Delegate")]
-		public virtual T Delegate
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Delegate")]
+		public virtual Delegate Delegate
 		{
-			get { return this._delegate; }
-		}
-
-		protected internal ISerializableDelegateResolver SerializableDelegateResolver
-		{
-			get { return this._serializableDelegateResolver ?? (this._serializableDelegateResolver = SerializableResolverLocator.Instance.SerializableDelegateResolver); }
+			get { return (Delegate) this.InstanceInternal; }
 		}
 
 		#endregion
 
 		#region Methods
 
-		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
-		public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
+		protected internal override object CreateDeserializedInstance()
 		{
-			this.GetObjectData(info, context, string.Empty);
+			throw new NotImplementedException();
 		}
 
-		public virtual void GetObjectData(SerializationInfo info, StreamingContext context, string index)
+		protected internal override object CreateSerializableInstance()
 		{
-			this.SerializableDelegateResolver.SetDelegate(this.Delegate, info, context, index);
+			throw new NotImplementedException();
 		}
 
 		#endregion
