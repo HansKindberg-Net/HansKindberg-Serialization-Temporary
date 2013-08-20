@@ -20,6 +20,28 @@ namespace HansKindberg.Serialization.IntegrationTests
 	{
 		#region Methods
 
+
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "binarySerializedSerializableDelegate"), TestMethod]
+		public void DelegateWithoutTarget_ShouldBeSerializable()
+		{
+			Func<HttpContext, HttpRequest> @delegate = httpContext => httpContext.Request;
+			Serializable<Func<HttpContext, HttpRequest>> serializableDelegate = new Serializable<Func<HttpContext, HttpRequest>>(@delegate);
+			string binarySerializedSerializableDelegate = serializableDelegate.SerializeBinary();
+			Serializable<Func<HttpContext, HttpRequest>> deserializedSerializableDelegate = (Serializable<Func<HttpContext, HttpRequest>>) ObjectExtension.DeserializeBinary(binarySerializedSerializableDelegate);
+			Func<HttpContext, HttpRequest> deserializedDelegate = deserializedSerializableDelegate.Instance;
+			Assert.IsNotNull(deserializedDelegate);
+		}
+
+
+
+
+
+
+
+
+
+
+
 		[TestMethod]
 		public void PrerequisiteTest_BinaryFormatter_SerializeAndDeserialize_WithMemoryStream()
 		{
