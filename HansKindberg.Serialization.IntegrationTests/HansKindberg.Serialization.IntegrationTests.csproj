@@ -81,8 +81,7 @@
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
     <Compile Include="CodeAnalysis\AssemblySuppressions.cs" />
-    <Compile Include="SerializableArrayTest.cs" />
-    <Compile Include="DefaultSerializableResolverTest.cs" />
+    <Compile Include="DefaultSerializationResolverTest.cs" />
     <Compile Include="Helpers\Extensions\ObjectExtension.cs" />
     <Compile Include="Mocks\UnserializableDisposableMockEventArgs.cs" />
     <Compile Include="Mocks\UnserializableDisposableMock.cs" />

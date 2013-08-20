@@ -1,19 +1,19 @@
 ﻿using Castle.DynamicProxy;
 
-namespace HansKindberg.Serialization
+namespace HansKindberg.Serialization.IoC
 {
-	public static class SerializableResolverLocator
+	public static class ServiceLocator
 	{
 		#region Fields
 
-		private static volatile ISerializableResolverLocator _instance;
+		private static volatile IServiceLocator _instance;
 		private static readonly object _lockObject = new object();
 
 		#endregion
 
 		#region Properties
 
-		public static ISerializableResolverLocator Instance
+		public static IServiceLocator Instance
 		{
 			get
 			{
@@ -22,9 +22,7 @@ namespace HansKindberg.Serialization
 					lock(_lockObject)
 					{
 						if(_instance == null)
-						{
-							_instance = new DefaultSerializableResolverLocator(new DefaultProxyBuilder());
-						}
+							_instance = new DefaultServiceLocator(new DefaultSerializationResolver(new DefaultProxyBuilder()));
 					}
 				}
 

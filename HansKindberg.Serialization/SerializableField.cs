@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using HansKindberg.Serialization.IoC;
 
 namespace HansKindberg.Serialization
 {
@@ -14,9 +15,9 @@ namespace HansKindberg.Serialization
 
 		#region Constructors
 
-		public SerializableField(FieldInfo fieldInformation, object instance) : this(fieldInformation, instance, SerializableResolverLocator.Instance.SerializableResolver) {}
+		public SerializableField(FieldInfo fieldInformation, object instance) : this(fieldInformation, instance, ServiceLocator.Instance.GetService<ISerializationResolver>()) {}
 
-		protected internal SerializableField(FieldInfo fieldInformation, object instance, ISerializableResolver serializableResolver) : base(instance, serializableResolver)
+		protected internal SerializableField(FieldInfo fieldInformation, object instance, ISerializationResolver serializationResolver) : base(instance, serializationResolver)
 		{
 			if(fieldInformation == null)
 				throw new ArgumentNullException("fieldInformation");

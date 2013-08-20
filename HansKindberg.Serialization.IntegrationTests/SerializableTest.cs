@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Runtime.Serialization;
@@ -258,30 +259,53 @@ namespace HansKindberg.Serialization.IntegrationTests
 		}
 
 		[TestMethod]
-		[SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "TEMPORARY")]
-		[SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "TEST")]
-		public void System_Net_Mail_MailMessage_ShouldBeSerializable_TEMPORARY_TEST()
+		public void System_Net_Mime_HeaderCollection_ShouldBeSerializable()
 		{
-			string binarySerializedSerializableMailMessage;
+			string binarySerializedSerializableHeaders;
 
 			using(MailMessage mailMessage = new MailMessage())
 			{
-				mailMessage.Headers.Add("Header", "HeaderValue");
+				mailMessage.Headers.Add("FirstHeaderName", "FirstHeaderValue");
+				mailMessage.Headers.Add("SecondHeaderName", "SecondHeaderValue");
+				mailMessage.Headers.Add("ThirdHeaderName", "ThirdHeaderValue");
 
-				Serializable<MailMessage> serializableMailMessage = new Serializable<MailMessage>(mailMessage);
-				binarySerializedSerializableMailMessage = serializableMailMessage.SerializeBinary();
+				Serializable<NameValueCollection> serializableHeaders = new Serializable<NameValueCollection>(mailMessage.Headers);
 
-				Assert.AreEqual("Header", mailMessage.Headers.Keys[0]);
-				Assert.AreEqual("HeaderValue", mailMessage.Headers[0]);
+				binarySerializedSerializableHeaders = serializableHeaders.SerializeBinary();
 			}
 
-			Serializable<MailMessage> deserializedSerializableMailMessage = (Serializable<MailMessage>) ObjectExtension.DeserializeBinary(binarySerializedSerializableMailMessage);
+			Serializable<NameValueCollection> deserializedSerializableHeaders = (Serializable<NameValueCollection>) ObjectExtension.DeserializeBinary(binarySerializedSerializableHeaders);
 
-			using(MailMessage deserializedMailMessage = deserializedSerializableMailMessage.Instance)
-			{
-				Assert.AreEqual("Header", deserializedMailMessage.Headers.Keys[0]);
-				Assert.AreEqual("HeaderValue", deserializedMailMessage.Headers[0]);
-			}
+			NameValueCollection deserializedHeaders = deserializedSerializableHeaders.Instance;
+
+			Assert.AreEqual(3, deserializedHeaders.Count);
+
+			Assert.AreEqual("FirstHeaderName", deserializedHeaders.Keys[0]);
+			Assert.AreEqual("FirstHeaderValue", deserializedHeaders[0]);
+
+			Assert.AreEqual("SecondHeaderName", deserializedHeaders.Keys[1]);
+			Assert.AreEqual("SecondHeaderValue", deserializedHeaders[1]);
+
+			Assert.AreEqual("ThirdHeaderName", deserializedHeaders.Keys[2]);
+			Assert.AreEqual("ThirdHeaderValue", deserializedHeaders[2]);
+		}
+
+		[TestMethod]
+		public void System_StringArray_ShouldBeSerializable()
+		{
+			Serializable<string[]> serializableArray = new Serializable<string[]>(new[] {"First", "Second", "Third"});
+			string binarySerializedSerializableArray = serializableArray.SerializeBinary();
+
+			Assert.IsNotNull(binarySerializedSerializableArray);
+
+			Serializable<string[]> deserializedSerializableArray = (Serializable<string[]>) ObjectExtension.DeserializeBinary(binarySerializedSerializableArray);
+
+			IEnumerable<string> deserializedArray = deserializedSerializableArray.Instance;
+
+			Assert.AreEqual(3, deserializedArray.Count());
+			Assert.AreEqual("First", deserializedArray.ElementAt(0));
+			Assert.AreEqual("Second", deserializedArray.ElementAt(1));
+			Assert.AreEqual("Third", deserializedArray.ElementAt(2));
 		}
 
 		[TestMethod]

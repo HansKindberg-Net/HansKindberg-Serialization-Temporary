@@ -1,46 +1,79 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using HansKindberg.Serialization.IoC;
 
 namespace HansKindberg.Serialization
 {
+	/// <summary>
+	/// This code is originally from http://www.codeproject.com/KB/cs/AnonymousSerialization.aspx.
+	/// </summary>
 	[Serializable]
-	public abstract class Serializable
+	public class Serializable<T>
 	{
 		#region Fields
 
-		[NonSerialized] private object _instance;
+		[NonSerialized] private T _instance;
+		private Type _instanceType;
 		private object _serializableInstance;
-		[NonSerialized] private ISerializableResolver _serializableResolver;
-		private Type _type;
+		[NonSerialized] private ISerializationResolver _serializationResolver;
 
 		#endregion
 
 		#region Constructors
 
-		protected Serializable(object instance, ISerializableResolver serializableResolver)
+		public Serializable(T instance) : this(instance, ServiceLocator.Instance.GetService<ISerializationResolver>()) {}
+
+		protected internal Serializable(T instance, ISerializationResolver serializationResolver)
 		{
-			if(serializableResolver == null)
-				throw new ArgumentNullException("serializableResolver");
+			if(serializationResolver == null)
+				throw new ArgumentNullException("serializationResolver");
 
 			this._instance = instance;
-			this._serializableResolver = serializableResolver;
-			this.SetType(instance);
+			this._instanceType = Equals(instance, null) ? null : instance.GetType();
+			this._serializationResolver = serializationResolver;
 		}
 
 		#endregion
 
 		#region Properties
 
-		protected internal virtual object InstanceInternal
+		public virtual T Instance
 		{
-			get { return this._instance; }
-			set
+			get
+			{
+				if(this.SerializableInstance != null)
+					this.Instance = this.CreateDeserializedInstance();
+
+				return this._instance;
+			}
+			protected internal set
 			{
 				this._instance = value;
-				this.SetType(value);
+				this.SerializableInstance = null;
 			}
+		}
+
+		protected internal virtual bool InstanceIsArray
+		{
+			get { return this.InstanceType != null && this.InstanceType.IsArray; }
+		}
+
+		protected internal virtual bool InstanceIsDelegate
+		{
+			get { return this.InstanceType != null && typeof(Delegate).IsAssignableFrom(this.InstanceType); }
+		}
+
+		protected internal virtual bool InstanceIsSerializable
+		{
+			get { return this.InstanceType == null || this.SerializationResolver.IsSerializable(this.InstanceType); }
+		}
+
+		protected internal virtual Type InstanceType
+		{
+			get { return this._instanceType; }
+			set { this._instanceType = value; }
 		}
 
 		protected internal virtual object SerializableInstance
@@ -49,53 +82,139 @@ namespace HansKindberg.Serialization
 			set { this._serializableInstance = value; }
 		}
 
-		protected internal virtual ISerializableResolver SerializableResolver
+		protected internal virtual ISerializationResolver SerializationResolver
 		{
-			get { return this._serializableResolver; }
-		}
-
-		[SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods")]
-		protected internal virtual Type Type
-		{
-			get { return this._type; }
-			set { this._type = value; }
+			get { return this._serializationResolver; }
 		}
 
 		#endregion
 
 		#region Methods
 
-		protected internal abstract object CreateDeserializedInstance();
-		protected internal abstract object CreateSerializableInstance();
-
-		protected internal virtual bool IsSerializable(object instance)
+		protected internal virtual T CreateDeserializedArray()
 		{
-			return instance == null || this.SerializableResolver.IsSerializable(instance.GetType());
+			Array serializableArray = (Array) this.SerializableInstance;
+
+			Array array = (Array) Activator.CreateInstance(this.InstanceType, new object[] {serializableArray.Length});
+
+			for(int i = 0; i < array.Length; i++)
+			{
+				object item = serializableArray.GetValue(i);
+
+				if(item == null)
+					continue;
+
+				Serializable<object> itemAsSerializable = item as Serializable<object>;
+
+				array.SetValue(itemAsSerializable != null ? itemAsSerializable.Instance : item, i);
+			}
+
+			return (T) (object) array;
 		}
 
-		protected internal void SetType(object instance)
+		protected internal virtual T CreateDeserializedDelegate()
 		{
-			this._type = instance != null ? instance.GetType() : null;
+			return default(T);
+		}
+
+		protected internal virtual IEnumerable<SerializableField> CreateDeserializedFields()
+		{
+			return (IEnumerable<SerializableField>) this.SerializableInstance;
+		}
+
+		protected internal virtual T CreateDeserializedInstance()
+		{
+			if(this.InstanceType == null)
+				return default(T);
+
+			if(this.InstanceIsSerializable)
+				return (T) this.SerializableInstance;
+
+			if(this.InstanceIsArray)
+				return this.CreateDeserializedArray();
+
+			if(this.InstanceIsDelegate)
+				return this.CreateDeserializedDelegate();
+
+			object instance = this.SerializationResolver.CreateUninitializedObject(this.InstanceType);
+
+			foreach(SerializableField deserializedField in this.CreateDeserializedFields())
+			{
+				deserializedField.FieldInformation.SetValue(instance, deserializedField.Instance);
+			}
+
+			return (T) instance;
+		}
+
+		protected internal virtual Array CreateSerializableArray()
+		{
+			Array array = (Array) (object) this.Instance;
+
+			if(this.InstanceIsSerializable)
+				return array;
+
+			object[] serializableArray = new object[array.Length];
+
+			for(int i = 0; i < array.Length; i++)
+			{
+				object item = array.GetValue(i);
+
+				if(item == null || this.SerializationResolver.IsSerializable(item.GetType()))
+					serializableArray[i] = item;
+				else
+					serializableArray[i] = new Serializable<object>(item, this.SerializationResolver);
+			}
+
+			return serializableArray;
+		}
+
+		protected internal virtual object CreateSerializableDelegate()
+		{
+			throw new NotImplementedException();
+		}
+
+		protected internal virtual IEnumerable<SerializableField> CreateSerializableFields()
+		{
+			List<SerializableField> serializableFields = new List<SerializableField>();
+
+			if(this.InstanceType != null)
+				serializableFields.AddRange(this.SerializationResolver.GetFieldsToSerialize(this.InstanceType).Select(fieldInfo => new SerializableField(fieldInfo, fieldInfo.GetValue(this.Instance))));
+
+			return serializableFields.ToArray();
+		}
+
+		protected internal virtual object CreateSerializableInstance()
+		{
+			if(this.InstanceIsSerializable)
+				return this.Instance;
+
+			if(this.InstanceIsArray)
+				return this.CreateSerializableArray();
+
+			if(this.InstanceIsDelegate)
+				return this.CreateSerializableDelegate();
+
+			return this.CreateSerializableFields().ToArray();
 		}
 
 		#endregion
 
 		#region Eventhandlers
 
-		protected internal virtual void OnDeserialized(StreamingContext streamingContext)
-		{
-			this.InstanceInternal = this.CreateDeserializedInstance();
-		}
+		//protected internal virtual void OnDeserialized(StreamingContext streamingContext)
+		//{
+		//	this.Instance = this.CreateDeserializedInstance();
+		//}
 
-		[OnDeserialized]
-		private void OnDeserializedInternal(StreamingContext streamingContext)
-		{
-			this.OnDeserialized(streamingContext);
-		}
+		//[OnDeserialized]
+		//private void OnDeserializedInternal(StreamingContext streamingContext)
+		//{
+		//	this.OnDeserialized(streamingContext);
+		//}
 
 		protected internal virtual void OnDeserializing(StreamingContext streamingContext)
 		{
-			this._serializableResolver = SerializableResolverLocator.Instance.SerializableResolver;
+			this._serializationResolver = ServiceLocator.Instance.GetService<ISerializationResolver>();
 		}
 
 		[OnDeserializing]
@@ -104,13 +223,13 @@ namespace HansKindberg.Serialization
 			this.OnDeserializing(streamingContext);
 		}
 
-		protected internal virtual void OnSerialized(StreamingContext streamingContext) {}
+		//protected internal virtual void OnSerialized(StreamingContext streamingContext) {}
 
-		[OnSerialized]
-		private void OnSerializedInternal(StreamingContext streamingContext)
-		{
-			this.OnSerialized(streamingContext);
-		}
+		//[OnSerialized]
+		//private void OnSerializedInternal(StreamingContext streamingContext)
+		//{
+		//	this.OnSerialized(streamingContext);
+		//}
 
 		protected internal virtual void OnSerializing(StreamingContext streamingContext)
 		{
@@ -121,52 +240,6 @@ namespace HansKindberg.Serialization
 		private void OnSerializingInternal(StreamingContext streamingContext)
 		{
 			this.OnSerializing(streamingContext);
-		}
-
-		#endregion
-	}
-
-	/// <summary>
-	/// This code is originally from http://www.codeproject.com/KB/cs/AnonymousSerialization.aspx.
-	/// </summary>
-	[Serializable]
-	public class Serializable<T> : Serializable
-	{
-		#region Constructors
-
-		public Serializable(T instance) : base(instance, SerializableResolverLocator.Instance.SerializableResolver) {}
-		protected internal Serializable(T instance, ISerializableResolver serializableResolver) : base(instance, serializableResolver) {}
-
-		#endregion
-
-		#region Properties
-
-		public virtual T Instance
-		{
-			get { return (T) this.InstanceInternal; }
-		}
-
-		#endregion
-
-		#region Methods
-
-		protected internal override object CreateDeserializedInstance()
-		{
-			throw new NotImplementedException();
-		}
-
-		protected internal override object CreateSerializableInstance()
-		{
-			if(this.IsSerializable(this.Instance))
-				return this.Instance;
-
-			if(this.Type.IsArray)
-				return new SerializableArray(this.Instance as Array).CreateSerializableInstance();
-
-			if(typeof(Delegate).IsAssignableFrom(this.Type))
-				return new SerializableDelegate(this.Instance as Delegate).CreateSerializableInstance();
-
-			return this.SerializableResolver.GetSerializableFields(this.Instance).ToArray();
 		}
 
 		#endregion
