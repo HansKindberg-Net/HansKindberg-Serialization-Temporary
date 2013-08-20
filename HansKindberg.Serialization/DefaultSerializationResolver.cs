@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -48,7 +47,6 @@ namespace HansKindberg.Serialization
 		//{
 		//	get { return _genericArgumentsRecursiveCache; }
 		//}
-
 		public static IDictionary<Type, bool> IsSerializableCache
 		{
 			get { return _isSerializableCache; }
@@ -141,11 +139,8 @@ namespace HansKindberg.Serialization
 		//{
 		//	if(type == null)
 		//		throw new ArgumentNullException("type");
-
 		//	// ReSharper disable PossibleMultipleEnumeration
-
 		//	IEnumerable<Type> genericArgumentsRecursive;
-
 		//	if(!GenericArgumentsRecursiveCache.TryGetValue(type, out genericArgumentsRecursive))
 		//	{
 		//		lock(_lockObject)
@@ -157,12 +152,9 @@ namespace HansKindberg.Serialization
 		//			}
 		//		}
 		//	}
-
 		//	return genericArgumentsRecursive;
-
 		//	// ReSharper restore PossibleMultipleEnumeration
 		//}
-
 		protected internal virtual IEnumerable<Type> GetGenericArgumentsRecursive(Type type)
 		{
 			if(type == null)
@@ -183,19 +175,19 @@ namespace HansKindberg.Serialization
 		{
 			//if(type != null)
 			//{
-				while(type != null)
-				{
-					if(type.IsGenericType && typeof(Serializable<>).IsAssignableFrom(type.GetGenericTypeDefinition()))
-						return true;
+			while(type != null)
+			{
+				if(type.IsGenericType && typeof(Serializable<>).IsAssignableFrom(type.GetGenericTypeDefinition()))
+					return true;
 
-					type = type.BaseType;
-				}
+				type = type.BaseType;
+			}
 
-				//if(typeof(SerializableField).IsAssignableFrom(type))
-				//	return true;
+			//if(typeof(SerializableField).IsAssignableFrom(type))
+			//	return true;
 
-				//if (typeof(SerializableDelegate).IsAssignableFrom(type))
-				//	return true;
+			//if (typeof(SerializableDelegate).IsAssignableFrom(type))
+			//	return true;
 			//}
 
 			return false;

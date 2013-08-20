@@ -1,10 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Dictionary>
-	<Acronyms>
-		<CasingExceptions>
-			<Acronym>Io</Acronym><!--  Inversion of -->
-		</CasingExceptions>
-	</Acronyms>
 	<Words>
 		<Recognized>
 			<Word>kindberg</Word>

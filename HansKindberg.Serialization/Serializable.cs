@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using HansKindberg.Serialization.IoC;
+using HansKindberg.Serialization.InversionOfControl;
 
 namespace HansKindberg.Serialization
 {
 	/// <summary>
-	/// This code is originally from http://www.codeproject.com/KB/cs/AnonymousSerialization.aspx.
+	/// This code/idea is originally from http://www.codeproject.com/KB/cs/AnonymousSerialization.aspx.
 	/// </summary>
 	[Serializable]
 	public class Serializable<T>
@@ -114,7 +114,12 @@ namespace HansKindberg.Serialization
 
 		protected internal virtual T CreateDeserializedDelegate()
 		{
-			return default(T);
+			if(this.SerializableInstance is Delegate)
+				return (T) this.SerializableInstance;
+
+			SerializableDelegate serializableDelegate = (SerializableDelegate) this.SerializableInstance;
+
+			return (T) (object) Delegate.CreateDelegate(this.InstanceType, serializableDelegate.Instance, serializableDelegate.MethodInformation);
 		}
 
 		protected internal virtual IEnumerable<SerializableField> CreateDeserializedFields()
@@ -170,7 +175,24 @@ namespace HansKindberg.Serialization
 
 		protected internal virtual object CreateSerializableDelegate()
 		{
-			throw new NotImplementedException();
+			Delegate @delegate = (Delegate) (object) this.Instance;
+
+			if(@delegate == null)
+				return @delegate;
+
+			if(@delegate.Target == null)
+				return @delegate;
+
+			if(@delegate.Method == null)
+				return @delegate;
+
+			if(@delegate.Method.DeclaringType == null)
+				return @delegate;
+
+			if(this.SerializationResolver.IsSerializable(@delegate.Method.DeclaringType))
+				return @delegate;
+
+			return new SerializableDelegate(@delegate.Method, @delegate.Target, this.SerializationResolver);
 		}
 
 		protected internal virtual IEnumerable<SerializableField> CreateSerializableFields()
@@ -178,7 +200,7 @@ namespace HansKindberg.Serialization
 			List<SerializableField> serializableFields = new List<SerializableField>();
 
 			if(this.InstanceType != null)
-				serializableFields.AddRange(this.SerializationResolver.GetFieldsToSerialize(this.InstanceType).Select(fieldInfo => new SerializableField(fieldInfo, fieldInfo.GetValue(this.Instance))));
+				serializableFields.AddRange(this.SerializationResolver.GetFieldsToSerialize(this.InstanceType).Select(fieldInfo => new SerializableField(fieldInfo, fieldInfo.GetValue(this.Instance), this.SerializationResolver)));
 
 			return serializableFields.ToArray();
 		}
@@ -201,17 +223,6 @@ namespace HansKindberg.Serialization
 
 		#region Eventhandlers
 
-		//protected internal virtual void OnDeserialized(StreamingContext streamingContext)
-		//{
-		//	this.Instance = this.CreateDeserializedInstance();
-		//}
-
-		//[OnDeserialized]
-		//private void OnDeserializedInternal(StreamingContext streamingContext)
-		//{
-		//	this.OnDeserialized(streamingContext);
-		//}
-
 		protected internal virtual void OnDeserializing(StreamingContext streamingContext)
 		{
 			this._serializationResolver = ServiceLocator.Instance.GetService<ISerializationResolver>();
@@ -222,14 +233,6 @@ namespace HansKindberg.Serialization
 		{
 			this.OnDeserializing(streamingContext);
 		}
-
-		//protected internal virtual void OnSerialized(StreamingContext streamingContext) {}
-
-		//[OnSerialized]
-		//private void OnSerializedInternal(StreamingContext streamingContext)
-		//{
-		//	this.OnSerialized(streamingContext);
-		//}
 
 		protected internal virtual void OnSerializing(StreamingContext streamingContext)
 		{
@@ -243,58 +246,5 @@ namespace HansKindberg.Serialization
 		}
 
 		#endregion
-
-		//#region Fields
-		//private readonly T _instance;
-		//private ISerializableResolver _serializableResolver;
-		//#endregion
-		//#region Constructors
-		//public Serializable(T instance)
-		//{
-		//	if(Equals(instance, null))
-		//		throw new ArgumentNullException("instance");
-		//	this._instance = instance;
-		//}
-		//protected internal Serializable(T instance, ISerializableResolver serializableResolver) : this(instance)
-		//{
-		//	if(serializableResolver == null)
-		//		throw new ArgumentNullException("serializableResolver");
-		//	this._serializableResolver = serializableResolver;
-		//}
-		//protected Serializable(SerializationInfo info, StreamingContext context) : this(info, context, string.Empty) {}
-		//protected internal Serializable(SerializationInfo info, StreamingContext context, string index)
-		//{
-		//	this._instance = this.SerializableResolver.InstanceFromSerializationInformation<T>(info, context, index);
-		//}
-		//protected internal Serializable(SerializationInfo info, StreamingContext context, ISerializableResolver serializableResolver) : this(info, context, serializableResolver, string.Empty) {}
-		//protected internal Serializable(SerializationInfo info, StreamingContext context, ISerializableResolver serializableResolver, string index)
-		//{
-		//	if(serializableResolver == null)
-		//		throw new ArgumentNullException("serializableResolver");
-		//	this._serializableResolver = serializableResolver;
-		//	this._instance = this.SerializableResolver.InstanceFromSerializationInformation<T>(info, context, index);
-		//}
-		//#endregion
-		//#region Properties
-		//public virtual T Instance
-		//{
-		//	get { return this._instance; }
-		//}
-		//protected internal ISerializableResolver SerializableResolver
-		//{
-		//	get { return this._serializableResolver ?? (this._serializableResolver = SerializableResolverLocator.Instance.SerializableResolver); }
-		//}
-		//#endregion
-		//#region Methods
-		//[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
-		//public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
-		//{
-		//	this.GetObjectData(info, context, string.Empty);
-		//}
-		//public virtual void GetObjectData(SerializationInfo info, StreamingContext context, string index)
-		//{
-		//	this.SerializableResolver.InstanceToSerializationInformation(this.Instance, info, context, index);
-		//}
-		//#endregion
 	}
 }

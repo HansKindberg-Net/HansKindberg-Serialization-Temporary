@@ -1,41 +1,41 @@
-﻿//using System;
-//using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using HansKindberg.Serialization.InversionOfControl;
 
-//namespace HansKindberg.Serialization
-//{
-//	[Serializable]
-//	[SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
-//	public class SerializableDelegate : Serializable
-//	{
-//		#region Constructors
+namespace HansKindberg.Serialization
+{
+	[Serializable]
+	[SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
+	public class SerializableDelegate : Serializable<object>
+	{
+		#region Fields
 
-//		public SerializableDelegate(Delegate @delegate) : base(@delegate, SerializableResolverLocator.Instance.SerializableResolver) {}
-//		protected internal SerializableDelegate(Delegate @delegate, ISerializableResolver serializableResolver) : base(@delegate, serializableResolver) {}
+		private readonly MethodInfo _methodInformation;
 
-//		#endregion
+		#endregion
 
-//		#region Properties
+		#region Constructors
 
-//		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Delegate")]
-//		public virtual Delegate Delegate
-//		{
-//			get { return (Delegate) this.InstanceInternal; }
-//		}
+		public SerializableDelegate(MethodInfo methodInformation, object target) : this(methodInformation, target, ServiceLocator.Instance.GetService<ISerializationResolver>()) {}
 
-//		#endregion
+		protected internal SerializableDelegate(MethodInfo methodInformation, object target, ISerializationResolver serializationResolver) : base(target, serializationResolver)
+		{
+			if(methodInformation == null)
+				throw new ArgumentNullException("methodInformation");
 
-//		#region Methods
+			this._methodInformation = methodInformation;
+		}
 
-//		protected internal override object CreateDeserializedInstance()
-//		{
-//			throw new NotImplementedException();
-//		}
+		#endregion
 
-//		protected internal override object CreateSerializableInstance()
-//		{
-//			throw new NotImplementedException();
-//		}
+		#region Properties
 
-//		#endregion
-//	}
-//}
+		public virtual MethodInfo MethodInformation
+		{
+			get { return this._methodInformation; }
+		}
+
+		#endregion
+	}
+}

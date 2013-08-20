@@ -1,6 +1,6 @@
-﻿using Castle.DynamicProxy;
+using Castle.DynamicProxy;
 
-namespace HansKindberg.Serialization.IoC
+namespace HansKindberg.Serialization.InversionOfControl
 {
 	public static class ServiceLocator
 	{

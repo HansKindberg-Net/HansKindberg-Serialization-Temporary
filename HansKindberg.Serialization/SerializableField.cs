@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using HansKindberg.Serialization.IoC;
+using HansKindberg.Serialization.InversionOfControl;
 
 namespace HansKindberg.Serialization
 {

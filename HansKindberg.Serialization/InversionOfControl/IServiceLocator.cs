@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace HansKindberg.Serialization.IoC
+namespace HansKindberg.Serialization.InversionOfControl
 {
 	public interface IServiceLocator : IServiceProvider
 	{
