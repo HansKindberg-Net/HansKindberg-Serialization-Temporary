@@ -8,7 +8,7 @@ Original code/idea
 Notes
 -----
 ### Serializing large objects
-When serializing large objects using HansKindberg.Serialization.Serializable<T> you can get the following exception if the object you want to serialize is very large:
+When serializing large objects using HansKindberg.Serialization.Serializable&lt;T&gt; you can get the following exception if the object you want to serialize is very large:
 <pre>
 System.Runtime.Serialization.SerializationException: The internal array cannot expand to greater than Int32.MaxValue elements.
 Result StackTrace:	
