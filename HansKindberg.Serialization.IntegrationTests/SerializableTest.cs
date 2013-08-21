@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
@@ -333,7 +334,20 @@ namespace HansKindberg.Serialization.IntegrationTests
 		[TestMethod]
 		public void System_Web_HttpContext_ShouldBeSerializable()
 		{
-			Assert.Inconclusive("Implementation needed.");
+			const string filename = "Default.html";
+			const string relativePath = "/" + filename;
+			string binarySerializedSerializableHttpContext;
+
+			using(StringWriter stringWriter = new StringWriter(CultureInfo.CurrentCulture))
+			{
+				HttpContext httpContext = new HttpContext(new HttpRequest(filename, "http://localhost" + relativePath, string.Empty), new HttpResponse(stringWriter));
+				Serializable<HttpContext> serializableHttpContext = new Serializable<HttpContext>(httpContext);
+				binarySerializedSerializableHttpContext = serializableHttpContext.SerializeBinary();
+			}
+
+			Serializable<HttpContext> deserializedSerializableHttpContext = (Serializable<HttpContext>)ObjectExtension.DeserializeBinary(binarySerializedSerializableHttpContext);
+			HttpContext deserializedHttpContext = deserializedSerializableHttpContext.Instance;
+			Assert.IsNotNull(deserializedHttpContext);
 		}
 
 		[TestMethod]
