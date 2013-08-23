@@ -6,7 +6,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace HansKindberg.Serialization.Formatters
 {
-	public class MemoryBinaryFormatter : IMemoryFormatter
+	public class BinaryMemoryFormatter : IMemoryFormatter
 	{
 		#region Fields
 
@@ -16,12 +16,12 @@ namespace HansKindberg.Serialization.Formatters
 
 		#region Constructors
 
-		public MemoryBinaryFormatter()
+		public BinaryMemoryFormatter()
 		{
 			this._binaryFormatter = new BinaryFormatter();
 		}
 
-		public MemoryBinaryFormatter(ISurrogateSelector selector, StreamingContext context)
+		public BinaryMemoryFormatter(ISurrogateSelector selector, StreamingContext context)
 		{
 			this._binaryFormatter = new BinaryFormatter(selector, context);
 		}

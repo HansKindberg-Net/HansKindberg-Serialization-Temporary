@@ -63,7 +63,7 @@
     <Compile Include="DefaultCircularReferenceTracker.cs" />
     <Compile Include="DefaultSerializationResolver.cs" />
     <Compile Include="DefaultMemoryFormatterFactory.cs" />
-    <Compile Include="Formatters\MemoryBinaryFormatter.cs" />
+    <Compile Include="Formatters\BinaryMemoryFormatter.cs" />
     <Compile Include="ICircularReferenceTracker.cs" />
     <Compile Include="IMemoryFormatterFactory.cs" />
     <Compile Include="IMemoryFormatter.cs" />

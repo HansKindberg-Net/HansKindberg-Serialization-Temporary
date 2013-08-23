@@ -8,7 +8,7 @@ namespace HansKindberg.Serialization
 
 		public virtual IMemoryFormatter Create()
 		{
-			return new MemoryBinaryFormatter();
+			return new BinaryMemoryFormatter();
 		}
 
 		#endregion
