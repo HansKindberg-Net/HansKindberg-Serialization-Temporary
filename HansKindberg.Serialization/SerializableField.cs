@@ -1,11 +1,13 @@
-﻿using System;
+using System;
 using System.Reflection;
-using HansKindberg.Serialization.InversionOfControl;
 
 namespace HansKindberg.Serialization
 {
+	/// <summary>
+	/// Used to serialize field values. This class is mainly for internal use and is not intended to be used in your code. Use <see cref="Serializable&lt;T&gt;" /> instead.
+	/// </summary>
 	[Serializable]
-	public class SerializableField : Serializable<object>
+	public class SerializableField : Serializable
 	{
 		#region Fields
 
@@ -15,9 +17,7 @@ namespace HansKindberg.Serialization
 
 		#region Constructors
 
-		public SerializableField(FieldInfo fieldInformation, object instance) : this(fieldInformation, instance, ServiceLocator.Instance.GetService<ISerializationResolver>()) {}
-
-		protected internal SerializableField(FieldInfo fieldInformation, object instance, ISerializationResolver serializationResolver) : base(instance, serializationResolver)
+		public SerializableField(FieldInfo fieldInformation, object instance) : base(instance)
 		{
 			if(fieldInformation == null)
 				throw new ArgumentNullException("fieldInformation");
@@ -29,6 +29,9 @@ namespace HansKindberg.Serialization
 
 		#region Properties
 
+		/// <summary>
+		/// Information about the field.
+		/// </summary>
 		public virtual FieldInfo FieldInformation
 		{
 			get { return this._fieldInformation; }

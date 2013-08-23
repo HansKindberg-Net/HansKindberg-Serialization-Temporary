@@ -6,11 +6,18 @@ namespace HansKindberg.Serialization
 {
 	public interface ISerializationResolver
 	{
+		#region Properties
+
+		bool DecideIfAnInstanceIsSerializableByActuallySerializingIt { get; set; }
+		IList<SerializationFailure> SerializationFailures { get; }
+
+		#endregion
+
 		#region Methods
 
 		object CreateUninitializedObject(Type type);
-		IEnumerable<FieldInfo> GetFieldsToSerialize(Type type);
-		bool IsSerializable(Type type);
+		IEnumerable<FieldInfo> GetFieldsForSerialization(Type type);
+		bool IsSerializable(object instance);
 
 		#endregion
 	}

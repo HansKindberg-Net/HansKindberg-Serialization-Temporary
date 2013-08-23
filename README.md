@@ -27,3 +27,8 @@ at System.Runtime.Serialization.ObjectIDGenerator.Rehash()
 * [**Binary serialization fails for moderately large object graphs**](http://connect.microsoft.com/VisualStudio/feedback/details/303278/binary-serialization-fails-for-moderately-large-object-graphs)
 * [**SerializationException when serializing lots of objects in .NET**](http://stackoverflow.com/questions/569127/serializationexception-when-serializing-lots-of-objects-in-net)
 * [**Large objects serialization with C#**](http://engineering.picscout.com/2013/05/large-objects-serialization-with-c.html)
+
+### Circular references
+*... The serialization architecture provided with the .NET Framework correctly handles object graphs and circular references automatically...*, read more:
+* [**Object Serialization in the .NET Framework**](http://msdn.microsoft.com/en-us/library/ms973893.aspx#objserializ_topic2)
+In this library it is handled with the HansKindberg.Serialization.ICircularReferenceTracker.

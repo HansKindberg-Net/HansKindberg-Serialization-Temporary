@@ -83,6 +83,8 @@
     <Compile Include="CodeAnalysis\AssemblySuppressions.cs" />
     <Compile Include="DefaultSerializationResolverTest.cs" />
     <Compile Include="Helpers\Extensions\ObjectExtension.cs" />
+    <Compile Include="Mocks\CircularReferenceInnerMock.cs" />
+    <Compile Include="Mocks\CircularReferenceOuterMock.cs" />
     <Compile Include="Mocks\UnserializableDisposableMockEventArgs.cs" />
     <Compile Include="Mocks\UnserializableDisposableMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

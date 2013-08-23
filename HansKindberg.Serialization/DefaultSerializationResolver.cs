@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -14,21 +15,53 @@ namespace HansKindberg.Serialization
 	{
 		#region Fields
 
-		private static readonly IDictionary<Type, IEnumerable<FieldInfo>> _fieldsCache = new Dictionary<Type, IEnumerable<FieldInfo>>();
-		//private static readonly IDictionary<Type, IEnumerable<Type>> _genericArgumentsRecursiveCache = new Dictionary<Type, IEnumerable<Type>>();
-		private static readonly IDictionary<Type, bool> _isSerializableCache = new Dictionary<Type, bool>();
+		private static readonly IDictionary<Type, IEnumerable<FieldInfo>> _fieldsForSerializationCache = new Dictionary<Type, IEnumerable<FieldInfo>>();
 		private static readonly object _lockObject = new object();
+		private readonly IMemoryFormatter _memoryFormatter;
+		private readonly IMemoryFormatterFactory _memoryFormatterFactory;
 		private readonly IProxyBuilder _proxyBuilder;
+
+		private static readonly Type[] _serializableBaseTypes = new[]
+			{
+				typeof(Serializable),
+				typeof(ValueType)
+			};
+
+		private static readonly IDictionary<Type, bool> _serializableTypesCache = new Dictionary<Type, bool>();
+		private readonly IList<SerializationFailure> _serializationFailures = new List<SerializationFailure>();
+
+		private static readonly Type[] _unserializableBaseTypes = new[]
+			{
+				typeof(Delegate)
+			};
+
+		private static readonly Type[] _unserializableDeclaringTypes = new[]
+			{
+				typeof(ListDictionary)
+			};
+
+		private static readonly Type[] _unserializableTypes = new[]
+			{
+				typeof(HybridDictionary),
+				typeof(ListDictionary),
+				Type.GetType("System.Runtime.Remoting.Messaging.ServerObjectTerminatorSink", true),
+				Type.GetType("System.Runtime.Remoting.Messaging.StackBuilderSink", true)
+			};
 
 		#endregion
 
 		#region Constructors
 
-		public DefaultSerializationResolver(IProxyBuilder proxyBuilder)
+		public DefaultSerializationResolver(IProxyBuilder proxyBuilder, IMemoryFormatterFactory memoryFormatterFactory)
 		{
 			if(proxyBuilder == null)
 				throw new ArgumentNullException("proxyBuilder");
 
+			if(memoryFormatterFactory == null)
+				throw new ArgumentNullException("memoryFormatterFactory");
+
+			this._memoryFormatter = memoryFormatterFactory.Create();
+			this._memoryFormatterFactory = memoryFormatterFactory;
 			this._proxyBuilder = proxyBuilder;
 		}
 
@@ -36,25 +69,57 @@ namespace HansKindberg.Serialization
 
 		#region Properties
 
+		public virtual bool DecideIfAnInstanceIsSerializableByActuallySerializingIt { get; set; }
+
 		[SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
-		public static IDictionary<Type, IEnumerable<FieldInfo>> FieldsCache
+		protected internal virtual IDictionary<Type, IEnumerable<FieldInfo>> FieldsForSerializationCache
 		{
-			get { return _fieldsCache; }
+			get { return _fieldsForSerializationCache; }
 		}
 
-		//[SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
-		//public static IDictionary<Type, IEnumerable<Type>> GenericArgumentsRecursiveCache
-		//{
-		//	get { return _genericArgumentsRecursiveCache; }
-		//}
-		public static IDictionary<Type, bool> IsSerializableCache
+		protected internal virtual IMemoryFormatter MemoryFormatter
 		{
-			get { return _isSerializableCache; }
+			get { return this._memoryFormatter; }
+		}
+
+		protected internal virtual IMemoryFormatterFactory MemoryFormatterFactory
+		{
+			get { return this._memoryFormatterFactory; }
 		}
 
 		protected internal virtual IProxyBuilder ProxyBuilder
 		{
 			get { return this._proxyBuilder; }
+		}
+
+		protected internal virtual IEnumerable<Type> SerializableBaseTypes
+		{
+			get { return _serializableBaseTypes; }
+		}
+
+		protected internal virtual IDictionary<Type, bool> SerializableTypesCache
+		{
+			get { return _serializableTypesCache; }
+		}
+
+		public virtual IList<SerializationFailure> SerializationFailures
+		{
+			get { return this._serializationFailures; }
+		}
+
+		protected internal virtual IEnumerable<Type> UnserializableBaseTypes
+		{
+			get { return _unserializableBaseTypes; }
+		}
+
+		protected internal virtual IEnumerable<Type> UnserializableDeclaringTypes
+		{
+			get { return _unserializableDeclaringTypes; }
+		}
+
+		protected internal virtual IEnumerable<Type> UnserializableTypes
+		{
+			get { return _unserializableTypes; }
 		}
 
 		#endregion
@@ -93,7 +158,7 @@ namespace HansKindberg.Serialization
 			}
 		}
 
-		public virtual IEnumerable<FieldInfo> GetFieldsToSerialize(Type type)
+		public virtual IEnumerable<FieldInfo> GetFieldsForSerialization(Type type)
 		{
 			if(type == null)
 				throw new ArgumentNullException("type");
@@ -102,14 +167,14 @@ namespace HansKindberg.Serialization
 
 			IEnumerable<FieldInfo> fields;
 
-			if(!FieldsCache.TryGetValue(type, out fields))
+			if(!this.FieldsForSerializationCache.TryGetValue(type, out fields))
 			{
 				lock(_lockObject)
 				{
-					if(!FieldsCache.TryGetValue(type, out fields))
+					if(!this.FieldsForSerializationCache.TryGetValue(type, out fields))
 					{
-						fields = this.GetFieldsToSerializeInternal(type);
-						FieldsCache.Add(type, fields);
+						fields = this.GetFieldsForSerializationInternal(type);
+						this.FieldsForSerializationCache.Add(type, fields);
 					}
 				}
 			}
@@ -119,7 +184,7 @@ namespace HansKindberg.Serialization
 			// ReSharper restore PossibleMultipleEnumeration
 		}
 
-		protected internal virtual IEnumerable<FieldInfo> GetFieldsToSerializeInternal(Type type)
+		protected internal virtual IEnumerable<FieldInfo> GetFieldsForSerializationInternal(Type type)
 		{
 			if(type == null)
 				throw new ArgumentNullException("type");
@@ -135,26 +200,6 @@ namespace HansKindberg.Serialization
 			}
 		}
 
-		//protected internal virtual IEnumerable<Type> GetGenericArgumentsRecursive(Type type)
-		//{
-		//	if(type == null)
-		//		throw new ArgumentNullException("type");
-		//	// ReSharper disable PossibleMultipleEnumeration
-		//	IEnumerable<Type> genericArgumentsRecursive;
-		//	if(!GenericArgumentsRecursiveCache.TryGetValue(type, out genericArgumentsRecursive))
-		//	{
-		//		lock(_lockObject)
-		//		{
-		//			if(!GenericArgumentsRecursiveCache.TryGetValue(type, out genericArgumentsRecursive))
-		//			{
-		//				genericArgumentsRecursive = this.GetGenericArgumentsRecursiveInternal(type);
-		//				GenericArgumentsRecursiveCache.Add(type, genericArgumentsRecursive);
-		//			}
-		//		}
-		//	}
-		//	return genericArgumentsRecursive;
-		//	// ReSharper restore PossibleMultipleEnumeration
-		//}
 		protected internal virtual IEnumerable<Type> GetGenericArgumentsRecursive(Type type)
 		{
 			if(type == null)
@@ -171,43 +216,50 @@ namespace HansKindberg.Serialization
 			}
 		}
 
-		protected internal virtual bool IsGenericSerializableType(Type type)
+		public virtual bool IsSerializable(object instance)
 		{
-			//if(type != null)
-			//{
-			while(type != null)
-			{
-				if(type.IsGenericType && typeof(Serializable<>).IsAssignableFrom(type.GetGenericTypeDefinition()))
-					return true;
+			if(instance == null)
+				return true;
 
-				type = type.BaseType;
+			if(this.DecideIfAnInstanceIsSerializableByActuallySerializingIt)
+			{
+				try
+				{
+					this.MemoryFormatter.Serialize(instance);
+
+					return true;
+				}
+				catch(SerializationException originalSerializationException)
+				{
+					SerializationException serializationException = new SerializationException(string.Format(CultureInfo.InvariantCulture, "The type \"{0}\" could not be serialized.", instance.GetType().FullName), originalSerializationException);
+
+					if(this.SerializationFailures.Count == int.MaxValue)
+						this.SerializationFailures.RemoveAt(0);
+
+					this.SerializationFailures.Add(new SerializationFailure {Type = instance.GetType(), SerializationException = serializationException});
+
+					return false;
+				}
 			}
 
-			//if(typeof(SerializableField).IsAssignableFrom(type))
-			//	return true;
-
-			//if (typeof(SerializableDelegate).IsAssignableFrom(type))
-			//	return true;
-			//}
-
-			return false;
+			return this.IsSerializable(instance.GetType());
 		}
 
-		public virtual bool IsSerializable(Type type)
+		protected internal virtual bool IsSerializable(Type type)
 		{
 			if(type == null)
 				throw new ArgumentNullException("type");
 
 			bool isSerializable;
 
-			if(!IsSerializableCache.TryGetValue(type, out isSerializable))
+			if(!this.SerializableTypesCache.TryGetValue(type, out isSerializable))
 			{
 				lock(_lockObject)
 				{
-					if(!IsSerializableCache.TryGetValue(type, out isSerializable))
+					if(!this.SerializableTypesCache.TryGetValue(type, out isSerializable))
 					{
 						isSerializable = this.IsSerializableInternal(type);
-						IsSerializableCache.Add(type, isSerializable);
+						this.SerializableTypesCache.Add(type, isSerializable);
 					}
 				}
 			}
@@ -223,11 +275,21 @@ namespace HansKindberg.Serialization
 			if(!type.IsSerializable)
 				return false;
 
-			if(this.IsGenericSerializableType(type))
+			if(this.SerializableBaseTypes.Any(serializableBaseType => serializableBaseType.IsAssignableFrom(type)))
 				return true;
 
-			//if(typeof(NameValueCollection).IsAssignableFrom(type))
-			//	return true;
+			if(this.UnserializableBaseTypes.Any(unserializableBaseType => unserializableBaseType.IsAssignableFrom(type)))
+				return false;
+
+			if(this.UnserializableTypes.Any(unserializableType => unserializableType == type))
+				return false;
+
+			Type declaringType = type.DeclaringType;
+
+			// ReSharper disable ConditionIsAlwaysTrueOrFalse
+			if(declaringType != null && this.UnserializableDeclaringTypes.Any(unserializableDeclaringType => unserializableDeclaringType == declaringType))
+				return false;
+			// ReSharper restore ConditionIsAlwaysTrueOrFalse
 
 			if(type.HasElementType)
 			{

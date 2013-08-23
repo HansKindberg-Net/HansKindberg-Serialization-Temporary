@@ -1,13 +1,15 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using HansKindberg.Serialization.InversionOfControl;
 
 namespace HansKindberg.Serialization
 {
+	/// <summary>
+	/// Used to serialize delegates. This class is mainly for internal use and is not intended to be used in your code. Use <see cref="Serializable&lt;T&gt;" /> instead.
+	/// </summary>
 	[Serializable]
 	[SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
-	public class SerializableDelegate : Serializable<object>
+	public class SerializableDelegate : Serializable
 	{
 		#region Fields
 
@@ -17,9 +19,7 @@ namespace HansKindberg.Serialization
 
 		#region Constructors
 
-		public SerializableDelegate(MethodInfo methodInformation, object target) : this(methodInformation, target, ServiceLocator.Instance.GetService<ISerializationResolver>()) {}
-
-		protected internal SerializableDelegate(MethodInfo methodInformation, object target, ISerializationResolver serializationResolver) : base(target, serializationResolver)
+		public SerializableDelegate(MethodInfo methodInformation, object target) : base(target)
 		{
 			if(methodInformation == null)
 				throw new ArgumentNullException("methodInformation");

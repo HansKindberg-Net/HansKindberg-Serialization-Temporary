@@ -1,5 +1,3 @@
-using Castle.DynamicProxy;
-
 namespace HansKindberg.Serialization.InversionOfControl
 {
 	public static class ServiceLocator
@@ -22,7 +20,7 @@ namespace HansKindberg.Serialization.InversionOfControl
 					lock(_lockObject)
 					{
 						if(_instance == null)
-							_instance = new DefaultServiceLocator(new DefaultSerializationResolver(new DefaultProxyBuilder()));
+							_instance = new DefaultServiceLocator();
 					}
 				}
 

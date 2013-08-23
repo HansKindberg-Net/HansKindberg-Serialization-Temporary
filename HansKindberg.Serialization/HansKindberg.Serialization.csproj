@@ -24,6 +24,8 @@
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\CodeAnalysis\Solution.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,6 +36,8 @@
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\CodeAnalysis\Solution.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -56,7 +60,13 @@
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
     <Compile Include="CodeAnalysis\AssemblySuppressions.cs" />
+    <Compile Include="DefaultCircularReferenceTracker.cs" />
     <Compile Include="DefaultSerializationResolver.cs" />
+    <Compile Include="DefaultMemoryFormatterFactory.cs" />
+    <Compile Include="Formatters\MemoryBinaryFormatter.cs" />
+    <Compile Include="ICircularReferenceTracker.cs" />
+    <Compile Include="IMemoryFormatterFactory.cs" />
+    <Compile Include="IMemoryFormatter.cs" />
     <Compile Include="InversionOfControl\DefaultServiceLocator.cs" />
     <Compile Include="InversionOfControl\IServiceLocator.cs" />
     <Compile Include="InversionOfControl\ServiceLocator.cs" />
@@ -66,6 +76,7 @@
     <Compile Include="Serializable.cs" />
     <Compile Include="SerializableDelegate.cs" />
     <Compile Include="SerializableField.cs" />
+    <Compile Include="SerializationFailure.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\HansKindberg.snk">
