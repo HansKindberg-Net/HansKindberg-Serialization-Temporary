@@ -121,18 +121,15 @@ namespace HansKindberg.Serialization
 			this.IdDictionary.Add(id, instance);
 		}
 
-		public virtual void TrackInstanceIfNecessary(Serializable serializable, ISerializationResolver serializationResolver)
+		public virtual void TrackInstanceIfNecessary(Serializable serializable)
 		{
-			if(serializationResolver == null)
-				throw new ArgumentNullException("serializationResolver");
-
 			if(serializable == null)
 				return;
 
 			if(this.ContainsTrackedInstance(serializable.Id))
 				return;
 
-			if(serializationResolver.IsSerializable(serializable.Instance))
+			if(serializable.InstanceIsSerializable)
 				return;
 
 			if(this.ContainsTrackedInstance(serializable.Instance))

@@ -28,7 +28,7 @@ namespace HansKindberg.Serialization
 			};
 
 		private static readonly IDictionary<Type, bool> _serializableTypesCache = new Dictionary<Type, bool>();
-		private readonly IList<SerializationFailure> _serializationFailures = new List<SerializationFailure>();
+		private readonly IList<SerializationResult> _serializationFailures = new List<SerializationResult>();
 
 		private static readonly Type[] _unserializableBaseTypes = new[]
 			{
@@ -69,8 +69,6 @@ namespace HansKindberg.Serialization
 
 		#region Properties
 
-		public virtual bool InvestigateSerializability { get; set; }
-
 		[SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
 		protected internal virtual IDictionary<Type, IEnumerable<FieldInfo>> FieldsForSerializationCache
 		{
@@ -100,11 +98,6 @@ namespace HansKindberg.Serialization
 		protected internal virtual IDictionary<Type, bool> SerializableTypesCache
 		{
 			get { return _serializableTypesCache; }
-		}
-
-		public virtual IList<SerializationFailure> SerializationFailures
-		{
-			get { return this._serializationFailures; }
 		}
 
 		protected internal virtual IEnumerable<Type> UnserializableBaseTypes
@@ -221,27 +214,6 @@ namespace HansKindberg.Serialization
 			if(instance == null)
 				return true;
 
-			if(this.InvestigateSerializability)
-			{
-				try
-				{
-					this.MemoryFormatter.Serialize(instance);
-
-					return true;
-				}
-				catch(SerializationException originalSerializationException)
-				{
-					SerializationException serializationException = new SerializationException(string.Format(CultureInfo.InvariantCulture, "The type \"{0}\" could not be serialized.", instance.GetType().FullName), originalSerializationException);
-
-					if(this.SerializationFailures.Count == int.MaxValue)
-						this.SerializationFailures.RemoveAt(0);
-
-					this.SerializationFailures.Add(new SerializationFailure {Type = instance.GetType(), SerializationException = serializationException});
-
-					return false;
-				}
-			}
-
 			return this.IsSerializable(instance.GetType());
 		}
 
@@ -309,6 +281,25 @@ namespace HansKindberg.Serialization
 				return false;
 
 			return true;
+		}
+
+		public virtual SerializationResult TrySerialize(object instance)
+		{
+			if(instance == null)
+				return new SerializationResult(null, (string) null);
+
+			try
+			{
+				string serializationString = this.MemoryFormatter.Serialize(instance);
+
+				return new SerializationResult(instance, serializationString);
+			}
+			catch(SerializationException originalSerializationException)
+			{
+				SerializationException serializationException = new SerializationException(string.Format(CultureInfo.InvariantCulture, "The type \"{0}\" could not be serialized.", instance.GetType().FullName), originalSerializationException);
+
+				return new SerializationResult(instance, serializationException);
+			}
 		}
 
 		#endregion

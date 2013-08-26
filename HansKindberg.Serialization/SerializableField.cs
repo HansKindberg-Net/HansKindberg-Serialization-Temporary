@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace HansKindberg.Serialization
@@ -7,7 +8,7 @@ namespace HansKindberg.Serialization
 	/// Used to serialize field values. This class is mainly for internal use and is not intended to be used in your code. Use <see cref="Serializable&lt;T&gt;" /> instead.
 	/// </summary>
 	[Serializable]
-	public class SerializableField : Serializable
+	public class SerializableField : GenericSerializable<object>
 	{
 		#region Fields
 
@@ -17,7 +18,7 @@ namespace HansKindberg.Serialization
 
 		#region Constructors
 
-		public SerializableField(FieldInfo fieldInformation, object instance) : base(instance)
+		protected internal SerializableField(FieldInfo fieldInformation, object instance, ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker, bool investigateSerializability, IList<SerializationResult> investigationResult) : base(instance, serializationResolver, circularReferenceTracker, investigateSerializability, investigationResult)
 		{
 			if(fieldInformation == null)
 				throw new ArgumentNullException("fieldInformation");
@@ -38,5 +39,47 @@ namespace HansKindberg.Serialization
 		}
 
 		#endregion
+
+
+
+
+
+
+
+
+
+		protected internal override object CreateSerializableInstance()
+		{
+			var serializableObject = new SerializableObject(this.Instance, this.SerializationResolver, this.CircularReferenceTracker, this.InvestigateSerializabilityInternal, this.InvestigationResultInternal);
+			serializableObject.PrepareForSerialization();
+			return serializableObject;
+		}
+
+		protected internal override object CreateDeserializedInstance(ISerializationResolver serializationResolver)
+		{
+			return null;
+
+			//if (serializationResolver == null)
+			//	throw new ArgumentNullException("serializationResolver");
+
+			//object instance = serializationResolver.CreateUninitializedObject(this.InstanceType);
+
+			//foreach (SerializableField serializableField in (IEnumerable<SerializableField>)this.SerializableInstance)
+			//{
+			//	serializableField.FieldInformation.SetValue(instance, serializableField.ins);
+			//	//deserializedField.FieldInformation.SetValue(instance, deserializedField.Instance);
+			//}
+
+			//return instance;
+		}
+
+
+
+
+
+
+
+
+
 	}
 }

@@ -64,9 +64,11 @@
     <Compile Include="DefaultSerializationResolver.cs" />
     <Compile Include="DefaultMemoryFormatterFactory.cs" />
     <Compile Include="Formatters\BinaryMemoryFormatter.cs" />
+    <Compile Include="GenericSerializable.cs" />
     <Compile Include="ICircularReferenceTracker.cs" />
     <Compile Include="IMemoryFormatterFactory.cs" />
     <Compile Include="IMemoryFormatter.cs" />
+    <Compile Include="InternalSerializable.cs" />
     <Compile Include="InversionOfControl\DefaultServiceLocator.cs" />
     <Compile Include="InversionOfControl\IServiceLocator.cs" />
     <Compile Include="InversionOfControl\ServiceLocator.cs" />
@@ -77,8 +79,8 @@
     <Compile Include="SerializableArray.cs" />
     <Compile Include="SerializableDelegate.cs" />
     <Compile Include="SerializableField.cs" />
-    <Compile Include="SerializableFieldCollection.cs" />
-    <Compile Include="SerializationFailure.cs" />
+    <Compile Include="SerializableObject.cs" />
+    <Compile Include="SerializationResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\HansKindberg.snk">
