@@ -8,7 +8,7 @@ namespace HansKindberg.Serialization
 	{
 		#region Properties
 
-		bool DecideIfAnInstanceIsSerializableByActuallySerializingIt { get; set; }
+		bool InvestigateSerializability { get; set; }
 		IList<SerializationFailure> SerializationFailures { get; }
 
 		#endregion

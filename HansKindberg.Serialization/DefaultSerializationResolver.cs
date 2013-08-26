@@ -69,7 +69,7 @@ namespace HansKindberg.Serialization
 
 		#region Properties
 
-		public virtual bool DecideIfAnInstanceIsSerializableByActuallySerializingIt { get; set; }
+		public virtual bool InvestigateSerializability { get; set; }
 
 		[SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
 		protected internal virtual IDictionary<Type, IEnumerable<FieldInfo>> FieldsForSerializationCache
@@ -221,7 +221,7 @@ namespace HansKindberg.Serialization
 			if(instance == null)
 				return true;
 
-			if(this.DecideIfAnInstanceIsSerializableByActuallySerializingIt)
+			if(this.InvestigateSerializability)
 			{
 				try
 				{

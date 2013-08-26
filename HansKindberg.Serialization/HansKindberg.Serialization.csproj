@@ -74,8 +74,10 @@
     <Compile Include="Extensions\SerializationInfoExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serializable.cs" />
+    <Compile Include="SerializableArray.cs" />
     <Compile Include="SerializableDelegate.cs" />
     <Compile Include="SerializableField.cs" />
+    <Compile Include="SerializableFieldCollection.cs" />
     <Compile Include="SerializationFailure.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -232,7 +232,7 @@ namespace HansKindberg.Serialization
 			return this.InstanceType == null || serializationResolver.IsSerializable(this.Instance);
 		}
 
-		protected internal virtual void SetInstance(ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker, IList<Serializable> instancesReferencingCircularReference)
+		protected internal virtual void Deserialize(ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker, IList<Serializable> instancesReferencingCircularReference)
 		{
 			if(circularReferenceTracker == null)
 				throw new ArgumentNullException("circularReferenceTracker");
@@ -244,7 +244,7 @@ namespace HansKindberg.Serialization
 
 			if(serializable != null)
 			{
-				serializable.SetInstance(serializationResolver, circularReferenceTracker, instancesReferencingCircularReference);
+				serializable.Deserialize(serializationResolver, circularReferenceTracker, instancesReferencingCircularReference);
 			}
 			else
 			{
@@ -254,7 +254,7 @@ namespace HansKindberg.Serialization
 				{
 					foreach(var serializableField in serializableFields)
 					{
-						serializableField.SetInstance(serializationResolver, circularReferenceTracker, instancesReferencingCircularReference);
+						serializableField.Deserialize(serializationResolver, circularReferenceTracker, instancesReferencingCircularReference);
 					}
 				}
 			}
@@ -270,7 +270,7 @@ namespace HansKindberg.Serialization
 			circularReferenceTracker.TrackInstanceIfNecessary(this, serializationResolver);
 		}
 
-		protected internal virtual bool SetInstanceTrackerIdIfNecessary(ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker)
+		protected internal virtual bool SetCircularReferenceIdIfNecessary(ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker)
 		{
 			if(serializationResolver == null)
 				throw new ArgumentNullException("serializationResolver");
@@ -296,7 +296,7 @@ namespace HansKindberg.Serialization
 			return true;
 		}
 
-		protected internal virtual void SetSerializableInstance(ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker)
+		protected internal virtual void Serialize(ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker)
 		{
 			if(serializationResolver == null)
 				throw new ArgumentNullException("serializationResolver");
@@ -306,7 +306,7 @@ namespace HansKindberg.Serialization
 
 			circularReferenceTracker.TrackInstanceIfNecessary(this, serializationResolver);
 
-			if(this.SetInstanceTrackerIdIfNecessary(serializationResolver, circularReferenceTracker))
+			if(this.SetCircularReferenceIdIfNecessary(serializationResolver, circularReferenceTracker))
 				return;
 
 			this.SerializableInstance = this.CreateSerializableInstance(serializationResolver);
@@ -315,7 +315,7 @@ namespace HansKindberg.Serialization
 
 			if(serializable != null)
 			{
-				serializable.SetSerializableInstance(serializationResolver, circularReferenceTracker);
+				serializable.Serialize(serializationResolver, circularReferenceTracker);
 				return;
 			}
 
@@ -326,7 +326,7 @@ namespace HansKindberg.Serialization
 
 			foreach(var serializableField in serializableFields)
 			{
-				serializableField.SetSerializableInstance(serializationResolver, circularReferenceTracker);
+				serializableField.Serialize(serializationResolver, circularReferenceTracker);
 			}
 		}
 
@@ -372,7 +372,7 @@ namespace HansKindberg.Serialization
 
 		private readonly IList<Guid> _circularReferenceIds;
 		[NonSerialized] private ICircularReferenceTracker _circularReferenceTracker;
-		private bool _decideIfAnInstanceIsSerializableByActuallySerializingIt;
+		private bool _investigateSerializability;
 		[NonSerialized] private ISerializationResolver _serializationResolver;
 
 		#endregion
@@ -408,10 +408,10 @@ namespace HansKindberg.Serialization
 			get { return this._circularReferenceTracker; }
 		}
 
-		public virtual bool DecideIfAnInstanceIsSerializableByActuallySerializingIt
+		public virtual bool InvestigateSerializability
 		{
-			get { return this._decideIfAnInstanceIsSerializableByActuallySerializingIt; }
-			set { this.SerializationResolver.DecideIfAnInstanceIsSerializableByActuallySerializingIt = this._decideIfAnInstanceIsSerializableByActuallySerializingIt = value; }
+			get { return this._investigateSerializability; }
+			set { this.SerializationResolver.InvestigateSerializability = this._investigateSerializability = value; }
 		}
 
 		public new virtual T Instance
@@ -442,10 +442,10 @@ namespace HansKindberg.Serialization
 				this.CircularReferenceTracker.AddReference(circularReferenceId);
 			}
 
-			this.SerializationResolver.DecideIfAnInstanceIsSerializableByActuallySerializingIt = this.DecideIfAnInstanceIsSerializableByActuallySerializingIt;
+			this.SerializationResolver.InvestigateSerializability = this.InvestigateSerializability;
 
 			var instancesReferencingCircularReference = new List<Serializable>();
-			this.SetInstance(this.SerializationResolver, this.CircularReferenceTracker, instancesReferencingCircularReference);
+			this.Deserialize(this.SerializationResolver, this.CircularReferenceTracker, instancesReferencingCircularReference);
 
 			base.OnDeserialized(streamingContext);
 
@@ -473,7 +473,7 @@ namespace HansKindberg.Serialization
 
 		protected internal virtual void OnSerializing(StreamingContext streamingContext)
 		{
-			this.SetSerializableInstance(this.SerializationResolver, this.CircularReferenceTracker);
+			this.Serialize(this.SerializationResolver, this.CircularReferenceTracker);
 
 			foreach(var circularReferenceId in this.CircularReferenceTracker.References)
 			{
