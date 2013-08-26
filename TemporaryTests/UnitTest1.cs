@@ -104,28 +104,28 @@ namespace TemporaryTests
 
 		#region Methods
 
-		[TestMethod]
-		public void System_Web_HttpContext_ShouldBeSerializable()
-		{
-			Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
-			Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("en");
+		//[TestMethod]
+		//public void System_Web_HttpContext_ShouldBeSerializable()
+		//{
+		//	Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+		//	Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("en");
 
-			const string filename = "Default.html";
-			const string relativePath = "/" + filename;
-			string binarySerializedSerializableHttpContext;
+		//	const string filename = "Default.html";
+		//	const string relativePath = "/" + filename;
+		//	string binarySerializedSerializableHttpContext;
 
-			using(StringWriter stringWriter = new StringWriter(CultureInfo.CurrentCulture))
-			{
-				HttpContext httpContext = new HttpContext(new HttpRequest(filename, "http://localhost" + relativePath, string.Empty), new HttpResponse(stringWriter));
-				Serializable<HttpContext> serializableHttpContext = new Serializable<HttpContext>(httpContext);
-				binarySerializedSerializableHttpContext = serializableHttpContext.SerializeBinary();
-			}
+		//	using(StringWriter stringWriter = new StringWriter(CultureInfo.CurrentCulture))
+		//	{
+		//		HttpContext httpContext = new HttpContext(new HttpRequest(filename, "http://localhost" + relativePath, string.Empty), new HttpResponse(stringWriter));
+		//		Serializable<HttpContext> serializableHttpContext = new Serializable<HttpContext>(httpContext);
+		//		binarySerializedSerializableHttpContext = serializableHttpContext.SerializeBinary();
+		//	}
 
-			Serializable<HttpContext> deserializedSerializableHttpContext = (Serializable<HttpContext>) ObjectExtension.DeserializeBinary(binarySerializedSerializableHttpContext);
-			HttpContext deserializedHttpContext = deserializedSerializableHttpContext.Instance;
-			Assert.IsNotNull(deserializedHttpContext);
-			Assert.AreEqual(relativePath, deserializedHttpContext.Request.FilePath);
-		}
+		//	Serializable<HttpContext> deserializedSerializableHttpContext = (Serializable<HttpContext>) ObjectExtension.DeserializeBinary(binarySerializedSerializableHttpContext);
+		//	HttpContext deserializedHttpContext = deserializedSerializableHttpContext.Instance;
+		//	Assert.IsNotNull(deserializedHttpContext);
+		//	Assert.AreEqual(relativePath, deserializedHttpContext.Request.FilePath);
+		//}
 
 		#endregion
 

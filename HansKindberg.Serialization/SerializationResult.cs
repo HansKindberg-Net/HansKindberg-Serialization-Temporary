@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace HansKindberg.Serialization
@@ -23,6 +24,7 @@ namespace HansKindberg.Serialization
 			this._instanceType = instance != null ? instance.GetType() : null;
 		}
 
+		[SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string")]
 		public SerializationResult(object instance, string serializationString) : this(instance)
 		{
 			this._serializationString = serializationString;

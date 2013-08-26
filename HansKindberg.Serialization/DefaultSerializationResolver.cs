@@ -28,7 +28,6 @@ namespace HansKindberg.Serialization
 			};
 
 		private static readonly IDictionary<Type, bool> _serializableTypesCache = new Dictionary<Type, bool>();
-		private readonly IList<SerializationResult> _serializationFailures = new List<SerializationResult>();
 
 		private static readonly Type[] _unserializableBaseTypes = new[]
 			{

@@ -8,18 +8,17 @@ namespace HansKindberg.Serialization
 	{
 		#region Constructors
 
-		protected GenericSerializable(T instance, ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker, bool investigateSerializability, IList<SerializationResult> investigationResult) : base(instance, serializationResolver, circularReferenceTracker, investigateSerializability, investigationResult)
-		{
-			
-		}
+		protected GenericSerializable(T instance, ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker, bool investigateSerializability, IList<SerializationResult> investigationResult) : base(instance, serializationResolver, circularReferenceTracker, investigateSerializability, investigationResult) {}
 
 		#endregion
 
 		#region Properties
 
-
-
-
+		public new virtual T Instance
+		{
+			get { return (T) base.Instance; }
+			protected internal set { base.Instance = value; }
+		}
 
 		public override bool InstanceIsSerializable
 		{
@@ -30,36 +29,6 @@ namespace HansKindberg.Serialization
 
 				return this.InstanceIsSerializableInternal.Value;
 			}
-		}
-
-
-
-
-
-
-
-
-
-		public new virtual T Instance
-		{
-			get { return (T)base.Instance; }
-			protected internal set
-			{
-				base.Instance = value;
-			}
-		}
-
-
-
-
-
-		#endregion
-
-		#region Methods
-
-		protected internal override object CreateSerializableInstance()
-		{
-			return this.Instance;
 		}
 
 		#endregion

@@ -15,6 +15,7 @@ namespace HansKindberg.Serialization
 
 		void AddReference(Guid id);
 		void Clear();
+		object GetTrackedInstance(Guid id);
 		Guid? GetTrackedInstanceId(object instance);
 		void TrackInstanceIfNecessary(Serializable serializable);
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -7,32 +8,21 @@ using HansKindberg.Serialization.InversionOfControl;
 
 namespace HansKindberg.Serialization
 {
-	
 	[Serializable]
 	public abstract class Serializable
 	{
 		#region Fields
 
-		private readonly Guid _id;
 		private Guid? _circularReferenceId;
-		private Type _instanceType;
-		private object _serializableInstance;
-		[NonSerialized]
-		private readonly IList<SerializationResult> _investigationResult;
-		[NonSerialized]
-		private bool _investigateSerializability;
-
-
-		[NonSerialized]
-		private ICircularReferenceTracker _circularReferenceTracker;
-		[NonSerialized]
-		private ISerializationResolver _serializationResolver;
-
-		[NonSerialized]
-		private bool? _instanceIsSerializable;
-
+		[NonSerialized] private ICircularReferenceTracker _circularReferenceTracker;
+		private readonly Guid _id;
 		[NonSerialized] private object _instance;
-		
+		[NonSerialized] private bool? _instanceIsSerializable;
+		private Type _instanceType;
+		[NonSerialized] private bool _investigateSerializability;
+		[NonSerialized] private readonly IList<SerializationResult> _investigationResult;
+		private object _serializableInstance;
+		[NonSerialized] private ISerializationResolver _serializationResolver;
 
 		#endregion
 
@@ -40,13 +30,13 @@ namespace HansKindberg.Serialization
 
 		protected Serializable(object instance, ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker, bool investigateSerializability, IList<SerializationResult> investigationResult)
 		{
-			if (serializationResolver == null)
+			if(serializationResolver == null)
 				throw new ArgumentNullException("serializationResolver");
 
-			if (circularReferenceTracker == null)
+			if(circularReferenceTracker == null)
 				throw new ArgumentNullException("circularReferenceTracker");
 
-			if (investigationResult == null)
+			if(investigationResult == null)
 				throw new ArgumentNullException("investigationResult");
 
 			this._circularReferenceTracker = circularReferenceTracker;
@@ -60,27 +50,23 @@ namespace HansKindberg.Serialization
 
 		#endregion
 
-		protected internal void SetInstanceType(object instance)
-		{
-			this._instanceType = instance != null ? instance.GetType() : null;
-		}
-
 		#region Properties
 
-		protected internal virtual bool InstanceIsArray
+		protected internal virtual Guid? CircularReferenceId
 		{
-			get { return this.Instance is Array; }
+			get { return this._circularReferenceId; }
+			set { this._circularReferenceId = value; }
 		}
 
-		protected internal virtual bool InstanceIsDelegate
+		protected internal virtual ICircularReferenceTracker CircularReferenceTracker
 		{
-			get { return this.Instance is Delegate; }
+			get { return this._circularReferenceTracker; }
+			set { this._circularReferenceTracker = value; }
 		}
 
-		protected internal virtual bool? InstanceIsSerializableInternal
+		public virtual Guid Id
 		{
-			get { return this._instanceIsSerializable; }
-			set { this._instanceIsSerializable = value; }
+			get { return this._id; }
 		}
 
 		public virtual object Instance
@@ -96,40 +82,10 @@ namespace HansKindberg.Serialization
 
 		public abstract bool InstanceIsSerializable { get; }
 
-		protected internal virtual ICircularReferenceTracker CircularReferenceTracker
+		protected internal virtual bool? InstanceIsSerializableInternal
 		{
-			get { return this._circularReferenceTracker; }
-			set { this._circularReferenceTracker = value; }
-		}
-
-		protected internal virtual ISerializationResolver SerializationResolver
-		{
-			get { return this._serializationResolver; }
-			set { this._serializationResolver = value; }
-		}
-
-		protected internal virtual IList<SerializationResult> InvestigationResultInternal
-		{
-			get { return this._investigationResult; }
-		}
-
-		protected internal virtual bool InvestigateSerializabilityInternal
-		{
-			get { return this._investigateSerializability; }
-			set { this._investigateSerializability = value; }
-		}
-
-
-
-		public virtual Guid Id
-		{
-			get { return this._id; }
-		}
-
-		protected internal virtual Guid? CircularReferenceId
-		{
-			get { return this._circularReferenceId; }
-			set { this._circularReferenceId = value; }
+			get { return this._instanceIsSerializable; }
+			set { this._instanceIsSerializable = value; }
 		}
 
 		protected internal virtual Type InstanceType
@@ -138,19 +94,173 @@ namespace HansKindberg.Serialization
 			set { this._instanceType = value; }
 		}
 
+		protected internal virtual bool InvestigateSerializabilityInternal
+		{
+			get { return this._investigateSerializability; }
+			set { this._investigateSerializability = value; }
+		}
+
+		protected internal virtual IList<SerializationResult> InvestigationResultInternal
+		{
+			get { return this._investigationResult; }
+		}
+
 		protected internal virtual object SerializableInstance
 		{
 			get { return this._serializableInstance; }
 			set { this._serializableInstance = value; }
 		}
 
+		protected internal virtual ISerializationResolver SerializationResolver
+		{
+			get { return this._serializationResolver; }
+			set { this._serializationResolver = value; }
+		}
+
 		#endregion
 
 		#region Methods
 
+		protected internal virtual object CreateDeserializedInstance(ISerializationResolver serializationResolver)
+		{
+			//Array serializableArray = (Array)this.SerializableInstance;
+
+			//Array array = (Array)Activator.CreateInstance(this.InstanceType, new object[] { serializableArray.Length });
+
+			//for (int i = 0; i < array.Length; i++)
+			//{
+			//	object item = serializableArray.GetValue(i);
+
+			//	if (item == null)
+			//		continue;
+
+			//	Serializable itemAsSerializable = item as Serializable;
+
+			//	array.SetValue(itemAsSerializable != null ? itemAsSerializable.Instance : item, i);
+			//}
+
+			//return array;
+
+
+
+
+
+			object instance = serializationResolver.CreateUninitializedObject(this.InstanceType);
+
+			foreach (SerializableField serializableField in (IEnumerable<SerializableField>)this.SerializableInstance)
+			{
+				serializableField.FieldInformation.SetValue(instance, serializableField.Instance);
+			}
+
+			return instance;
+
+
+
+
+			//Serializable serializable = this.SerializableInstance as Serializable;
+
+			//if(serializable != null)
+			//	return serializable.CreateDeserializedInstance(serializationResolver);
+
+			//return this.SerializableInstance;
+		}
+
+		//protected internal virtual Serializable CreateSerializable(object instance)
+		//{
+		//	if(instance == null)
+		//		return null;
+
+		//	Array array = instance as Array;
+		//	if(array != null)
+		//		return new SerializableArray(array, this.SerializationResolver, this.CircularReferenceTracker, this.InvestigateSerializabilityInternal, this.InvestigationResultInternal);
+
+		//	return new SerializableObject(instance, this.SerializationResolver, this.CircularReferenceTracker, this.InvestigateSerializabilityInternal, this.InvestigationResultInternal);
+		//}
+
+		protected internal virtual object CreateSerializableInstance()
+		{
+			if(this.InstanceIsSerializable)
+				return this.Instance;
+
+			Array array = this.Instance as Array;
+			if(array != null)
+			{
+				object[] serializableArray = new object[array.Length];
+
+				for (int i = 0; i < array.Length; i++)
+				{
+					object item = array.GetValue(i);
+
+					if(this.IsSerializable(item))
+						serializableArray[i] = item;
+					else
+						serializableArray[i] = new SerializableInternal(item, this.SerializationResolver, this.CircularReferenceTracker, this.InvestigateSerializabilityInternal, this.InvestigationResultInternal);
+				}
+
+				return serializableArray;
+			}
+
+			var serializableFields = new List<SerializableField>();
+
+			// ReSharper disable LoopCanBeConvertedToQuery
+			foreach (var fieldInformation in this.SerializationResolver.GetFieldsForSerialization(this.Instance.GetType()))
+			{
+				object fieldValue = fieldInformation.GetValue(this.Instance);
+
+				if (fieldValue == null)
+					continue;
+
+				serializableFields.Add(new SerializableField(fieldInformation, fieldValue, this.SerializationResolver, this.CircularReferenceTracker, this.InvestigateSerializabilityInternal, this.InvestigationResultInternal));
+			}
+			// ReSharper restore LoopCanBeConvertedToQuery
+
+			return serializableFields.ToArray();
+		}
+
+		protected internal virtual void HandleDeserialization(ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker, IList<Serializable> instancesReferencingCircularReference)
+		{
+			if (circularReferenceTracker == null)
+				throw new ArgumentNullException("circularReferenceTracker");
+
+			if (instancesReferencingCircularReference == null)
+				throw new ArgumentNullException("instancesReferencingCircularReference");
+
+			var enumerable = this.InstanceAsEnumerable(this.SerializableInstance);
+
+			foreach (var serializableItem in enumerable.OfType<Serializable>())
+			{
+				serializableItem.HandleDeserialization(serializationResolver, circularReferenceTracker, instancesReferencingCircularReference);
+			}
+
+			if (this.CircularReferenceId != null)
+			{
+				instancesReferencingCircularReference.Add(this);
+				return;
+			}
+
+			this.Instance = this.CreateDeserializedInstance(serializationResolver);
+
+			circularReferenceTracker.TrackInstanceIfNecessary(this);
+		}
+
+		protected internal virtual IEnumerable InstanceAsEnumerable(object instance)
+		{
+			IEnumerable enumerable = instance as IEnumerable;
+
+			if(enumerable != null)
+				return enumerable;
+
+			List<object> list = new List<object>();
+
+			if(instance != null)
+				list.Add(instance);
+
+			return list.ToArray();
+		}
+
 		protected internal virtual bool IsSerializable(object instance)
 		{
-			if (this.InvestigateSerializabilityInternal)
+			if(this.InvestigateSerializabilityInternal)
 			{
 				SerializationResult serializationResult = this.SerializationResolver.TrySerialize(instance);
 				this.InvestigationResultInternal.Add(serializationResult);
@@ -160,199 +270,34 @@ namespace HansKindberg.Serialization
 			return this.SerializationResolver.IsSerializable(instance);
 		}
 
-
-
-		//protected internal virtual Delegate CreateDeserializedDelegate()
-		//{
-		//	var @delegate = this.SerializableInstance as Delegate;
-
-		//	if(@delegate != null)
-		//		return @delegate;
-
-		//	SerializableDelegate serializableDelegate = (SerializableDelegate) this.SerializableInstance;
-
-		//	return Delegate.CreateDelegate(this.InstanceType, serializableDelegate.Instance, serializableDelegate.MethodInformation);
-		//}
-
-		//protected internal virtual IEnumerable<SerializableField> CreateDeserializedFields()
-		//{
-		//	return (IEnumerable<SerializableField>)this.SerializableInstance;
-		//}
-
-		protected internal virtual Serializable CreateSerializable(object instance)
-		{
-			if(this.IsSerializable(instance))
-				throw new InvalidOperationException("Change this message.");
-
-
-			//if (serializationResolver == null)
-			//	throw new ArgumentNullException("serializationResolver");
-
-			//if (this.InstanceType == null)
-			//	return null;
-
-			//if (this.InstanceIsSerializable(serializationResolver))
-			//	return this.SerializableInstance;
-
-			//if (this.InstanceIsArray)
-			//	return this.CreateDeserializedArray();
-
-			////if(this.InstanceIsDelegate)
-			////	return this.CreateDeserializedDelegate();
-
-			//object instance = serializationResolver.CreateUninitializedObject(this.InstanceType);
-
-			//foreach (SerializableField deserializedField in this.CreateDeserializedFields())
-			//{
-			//	deserializedField.FieldInformation.SetValue(instance, deserializedField.Instance);
-			//}
-
-			//return instance;
-		}
-
-		protected internal virtual object CreateDeserializedInstance(ISerializationResolver serializationResolver)
-		{
-			return null;
-
-
-			//if (serializationResolver == null)
-			//	throw new ArgumentNullException("serializationResolver");
-
-			//if (this.InstanceType == null)
-			//	return null;
-
-			//if (this.InstanceIsSerializable(serializationResolver))
-			//	return this.SerializableInstance;
-
-			//if (this.InstanceIsArray)
-			//	return this.CreateDeserializedArray();
-
-			////if(this.InstanceIsDelegate)
-			////	return this.CreateDeserializedDelegate();
-
-			//object instance = serializationResolver.CreateUninitializedObject(this.InstanceType);
-
-			//foreach (SerializableField deserializedField in this.CreateDeserializedFields())
-			//{
-			//	deserializedField.FieldInformation.SetValue(instance, deserializedField.Instance);
-			//}
-
-			//return instance;
-		}
-
-
-
-		//protected internal virtual object CreateSerializableDelegate(ISerializationResolver serializationResolver)
-		//{
-		//	if(serializationResolver == null)
-		//		throw new ArgumentNullException("serializationResolver");
-
-		//	Delegate @delegate = (Delegate) this.Instance;
-
-		//	if(@delegate == null)
-		//		return @delegate;
-
-		//	if(@delegate.Target == null)
-		//		return @delegate;
-
-		//	if(@delegate.Method == null)
-		//		return @delegate;
-
-		//	if(@delegate.Method.DeclaringType == null)
-		//		return @delegate;
-
-		//	if(serializationResolver.IsSerializable(@delegate.Method.DeclaringType))
-		//		return @delegate;
-
-		//	return new SerializableDelegate(@delegate.Method, @delegate.Target);
-		//}
-
-		protected internal abstract object CreateSerializableInstance();
-
 		protected internal virtual void PrepareForSerialization()
 		{
 			this.CircularReferenceTracker.TrackInstanceIfNecessary(this);
 
-			if (this.SetCircularReferenceIdIfNecessary())
+			if(this.SetCircularReferenceIdIfNecessary())
 				return;
 
-			this.SerializableInstance = this.InstanceIsSerializable ? this.Instance : this.CreateSerializableInstance();
-		}
+			this.SerializableInstance = this.CreateSerializableInstance();
 
-		//protected internal virtual object CreateSerializableInstance(ISerializationResolver serializationResolver)
-		//{
-		//	if(serializationResolver == null)
-		//		throw new ArgumentNullException("serializationResolver");
+			var enumerable = this.InstanceAsEnumerable(this.SerializableInstance);
 
-		//	if(this.InstanceIsSerializable(serializationResolver))
-		//		return this.Instance;
-
-		//	if(this.InstanceIsArray)
-		//		return this.CreateSerializableArray(serializationResolver);
-
-		//	//if(this.InstanceIsDelegate)
-		//	//	return this.CreateSerializableDelegate(serializationResolver);
-
-		//	return this.CreateSerializableFields(serializationResolver);
-		//}
-
-		//protected internal virtual bool InstanceIsSerializable(ISerializationResolver serializationResolver)
-		//{
-		//	if(serializationResolver == null)
-		//		throw new ArgumentNullException("serializationResolver");
-
-		//	return this.InstanceType == null || serializationResolver.IsSerializable(this.Instance);
-		//}
-
-		protected internal virtual void Deserialize(ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker, IList<Serializable> instancesReferencingCircularReference)
-		{
-			//if(circularReferenceTracker == null)
-			//	throw new ArgumentNullException("circularReferenceTracker");
-
-			//if(instancesReferencingCircularReference == null)
-			//	throw new ArgumentNullException("instancesReferencingCircularReference");
-
-			//var serializable = this.SerializableInstance as Serializable;
-
-			//if(serializable != null)
-			//{
-			//	serializable.Deserialize(serializationResolver, circularReferenceTracker, instancesReferencingCircularReference);
-			//}
-			//else
-			//{
-			//	var serializableFields = this.SerializableInstance as IEnumerable<SerializableField>;
-
-			//	if(serializableFields != null)
-			//	{
-			//		foreach(var serializableField in serializableFields)
-			//		{
-			//			serializableField.Deserialize(serializationResolver, circularReferenceTracker, instancesReferencingCircularReference);
-			//		}
-			//	}
-			//}
-
-			//if(this.CircularReferenceId != null)
-			//{
-			//	instancesReferencingCircularReference.Add(this);
-			//	return;
-			//}
-
-			//this.Instance = this.CreateDeserializedInstance(serializationResolver);
-
-			//circularReferenceTracker.TrackInstanceIfNecessary(this, serializationResolver);
+			foreach(var serializableItem in enumerable.OfType<Serializable>())
+			{
+				serializableItem.PrepareForSerialization();
+			}
 		}
 
 		protected internal virtual bool SetCircularReferenceIdIfNecessary()
 		{
-			if (this.InstanceIsSerializable)
+			if(this.InstanceIsSerializable)
 				return false;
 
 			Guid? instanceId = this.CircularReferenceTracker.GetTrackedInstanceId(this.Instance);
 
-			if (!instanceId.HasValue)
+			if(!instanceId.HasValue)
 				throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "The instance for serializable with id \"{0}\" has not been tracked.", this.Id));
 
-			if (instanceId.Value == this.Id)
+			if(instanceId.Value == this.Id)
 				return false;
 
 			this.CircularReferenceId = instanceId;
@@ -361,25 +306,10 @@ namespace HansKindberg.Serialization
 			return true;
 		}
 
-		//protected internal virtual void Serialize()
-		//{
-
-
-		//	circularReferenceTracker.TrackInstanceIfNecessary(this, serializationResolver);
-
-		//	if (this.SetCircularReferenceIdIfNecessary(serializationResolver, circularReferenceTracker))
-		//		return;
-
-		//	this.SerializableInstance = this.CreateSerializableInstance(serializationResolver);
-
-		//	Serializable serializable = this.SerializableInstance as Serializable;
-
-		//	if (serializable != null)
-		//	{
-		//		serializable.Serialize(serializationResolver, circularReferenceTracker);
-		//		return;
-		//	}
-		//}
+		protected internal void SetInstanceType(object instance)
+		{
+			this._instanceType = instance != null ? instance.GetType() : null;
+		}
 
 		#endregion
 
@@ -410,6 +340,20 @@ namespace HansKindberg.Serialization
 		}
 
 		#endregion
+
+		//protected internal virtual void Serialize()
+		//{
+		//	circularReferenceTracker.TrackInstanceIfNecessary(this, serializationResolver);
+		//	if (this.SetCircularReferenceIdIfNecessary(serializationResolver, circularReferenceTracker))
+		//		return;
+		//	this.SerializableInstance = this.CreateSerializableInstance(serializationResolver);
+		//	Serializable serializable = this.SerializableInstance as Serializable;
+		//	if (serializable != null)
+		//	{
+		//		serializable.Serialize(serializationResolver, circularReferenceTracker);
+		//		return;
+		//	}
+		//}
 	}
 
 	/// <summary>
@@ -422,7 +366,7 @@ namespace HansKindberg.Serialization
 		#region Fields
 
 		private readonly IList<Guid> _circularReferenceIds;
-		
+
 		#endregion
 
 		#region Constructors
@@ -443,31 +387,28 @@ namespace HansKindberg.Serialization
 			get { return this._circularReferenceIds; }
 		}
 
-
-
 		public virtual bool InvestigateSerializability
 		{
 			get { return this.InvestigateSerializabilityInternal; }
 			set { this.InvestigateSerializabilityInternal = value; }
 		}
 
-
 		public virtual IEnumerable<SerializationResult> InvestigationResult
 		{
 			get { return this.InvestigationResultInternal.ToArray(); }
 		}
 
-
-
-
-
 		#endregion
+
+		#region Methods
 
 		protected internal virtual void ClearCircularReferenceTracking()
 		{
 			this.CircularReferenceIds.Clear();
 			this.CircularReferenceTracker.Clear();
 		}
+
+		#endregion
 
 		#region Eventhandlers
 
@@ -479,7 +420,15 @@ namespace HansKindberg.Serialization
 			}
 
 			var instancesReferencingCircularReference = new List<Serializable>();
-			this.Deserialize(this.SerializationResolver, this.CircularReferenceTracker, instancesReferencingCircularReference);
+			this.HandleDeserialization(this.SerializationResolver, this.CircularReferenceTracker, instancesReferencingCircularReference);
+
+			foreach(var serializable in instancesReferencingCircularReference)
+			{
+				if(!serializable.CircularReferenceId.HasValue)
+					throw new InvalidOperationException("The serializable is classified as referencing a circular reference but has no circular-reference-id.");
+
+				serializable.Instance = this.CircularReferenceTracker.GetTrackedInstance(serializable.CircularReferenceId.Value);
+			}
 
 			base.OnDeserialized(streamingContext);
 
@@ -507,7 +456,7 @@ namespace HansKindberg.Serialization
 
 		protected internal virtual void OnSerializing(StreamingContext streamingContext)
 		{
-			this.Serialize(this.SerializationResolver, this.CircularReferenceTracker);
+			this.PrepareForSerialization();
 
 			foreach(var circularReferenceId in this.CircularReferenceTracker.References)
 			{

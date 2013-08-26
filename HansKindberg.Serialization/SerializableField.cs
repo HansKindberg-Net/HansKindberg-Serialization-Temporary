@@ -41,45 +41,5 @@ namespace HansKindberg.Serialization
 		#endregion
 
 
-
-
-
-
-
-
-
-		protected internal override object CreateSerializableInstance()
-		{
-			var serializableObject = new SerializableObject(this.Instance, this.SerializationResolver, this.CircularReferenceTracker, this.InvestigateSerializabilityInternal, this.InvestigationResultInternal);
-			serializableObject.PrepareForSerialization();
-			return serializableObject;
-		}
-
-		protected internal override object CreateDeserializedInstance(ISerializationResolver serializationResolver)
-		{
-			return null;
-
-			//if (serializationResolver == null)
-			//	throw new ArgumentNullException("serializationResolver");
-
-			//object instance = serializationResolver.CreateUninitializedObject(this.InstanceType);
-
-			//foreach (SerializableField serializableField in (IEnumerable<SerializableField>)this.SerializableInstance)
-			//{
-			//	serializableField.FieldInformation.SetValue(instance, serializableField.ins);
-			//	//deserializedField.FieldInformation.SetValue(instance, deserializedField.Instance);
-			//}
-
-			//return instance;
-		}
-
-
-
-
-
-
-
-
-
 	}
 }

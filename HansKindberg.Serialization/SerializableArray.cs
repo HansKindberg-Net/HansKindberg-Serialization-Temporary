@@ -1,63 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿//using System;
+//using System.Collections.Generic;
 
-namespace HansKindberg.Serialization
-{
-	/// <summary>
-	/// This class is mainly for internal use and is not intended to be used in your code. Use <see cref="Serializable&lt;T&gt;" /> instead.
-	/// </summary>
-	[Serializable]
-	public class SerializableArray : GenericSerializable<Array>
-	{
-		protected SerializableArray(Array array) : base(array) {}
+//namespace HansKindberg.Serialization
+//{
+//	/// <summary>
+//	/// Used to serialize arrays. This class is mainly for internal use and is not intended to be used in your code. Use <see cref="Serializable&lt;T&gt;" /> instead.
+//	/// </summary>
+//	[Serializable]
+//	public class SerializableArray : GenericSerializable<Array>
+//	{
+//		#region Constructors
 
+//		protected internal SerializableArray(Array array, ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker, bool investigateSerializability, IList<SerializationResult> investigationResult) : base(array, serializationResolver, circularReferenceTracker, investigateSerializability, investigationResult) {}
 
-		protected internal override object CreateSerializableInstance()
-		{
-			object[] serializableArray = new object[this.Instance.Length];
+//		#endregion
 
-			for (int i = 0; i < this.Instance.Length; i++)
-			{
-				object item = this.Instance.GetValue(i);
+//		#region Methods
 
-				if(this.IsSerializable(item))
-				{
-					serializableArray[i] = item;
-				}
-				else
-				{
-					Serializable serializable = this.CreateSerializable(item);
-					serializable.PrepareForSerialization();
-					serializableArray[i] = serializable;
-				}
-			}
+//		protected internal override object CreateDeserializedInstance(ISerializationResolver serializationResolver)
+//		{
+//			Array serializableArray = (Array)this.SerializableInstance;
 
-			return serializableArray;
-		}
+//			Array array = (Array)Activator.CreateInstance(this.InstanceType, new object[] { serializableArray.Length });
 
-		protected internal override object CreateDeserializedInstance(ISerializationResolver serializationResolver)
-		{
-			return null;
+//			for (int i = 0; i < array.Length; i++)
+//			{
+//				object item = serializableArray.GetValue(i);
 
-			//Array serializableArray = (Array)this.SerializableInstance;
+//				if (item == null)
+//					continue;
 
-			//Array array = (Array)Activator.CreateInstance(this.InstanceType, new object[] { serializableArray.Length });
+//				Serializable itemAsSerializable = item as Serializable;
 
-			//for (int i = 0; i < array.Length; i++)
-			//{
-			//	object item = serializableArray.GetValue(i);
+//				array.SetValue(itemAsSerializable != null ? itemAsSerializable.Instance : item, i);
+//			}
 
-			//	if (item == null)
-			//		continue;
+//			return array;
+//		}
 
-			//	Serializable itemAsSerializable = item as Serializable;
+//		protected internal override object CreateSerializableInstance()
+//		{
+//			if(this.InstanceIsSerializable)
+//				return this.Instance;
 
-			//	array.SetValue(itemAsSerializable != null ? itemAsSerializable.Instance : item, i);
-			//}
+//			object[] serializableArray = new object[this.Instance.Length];
 
-			//return array;
-		}
-	}
-}
+//			for(int i = 0; i < this.Instance.Length; i++)
+//			{
+//				object item = this.Instance.GetValue(i);
+
+//				if(this.IsSerializable(item))
+//					serializableArray[i] = item;
+//				else
+//					serializableArray[i] = this.CreateSerializable(item);
+//			}
+
+//			return serializableArray;
+//		}
+
+//		#endregion
+//	}
+//}

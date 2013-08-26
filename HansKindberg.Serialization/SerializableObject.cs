@@ -1,62 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿//using System;
+//using System.Collections.Generic;
 
-namespace HansKindberg.Serialization
-{
-	/// <summary>
-	/// This class is mainly for internal use and is not intended to be used in your code. Use <see cref="Serializable&lt;T&gt;" /> instead.
-	/// </summary>
-	[Serializable]
-	public class SerializableObject : GenericSerializable<object>
-	{
-		protected internal SerializableObject(object instance, ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker, bool investigateSerializability, IList<SerializationResult> investigationResult) : base(instance, serializationResolver, circularReferenceTracker, investigateSerializability, investigationResult)
-		{
-			
-		}
+//namespace HansKindberg.Serialization
+//{
+//	/// <summary>
+//	/// This class is mainly for internal use and is not intended to be used in your code. Use <see cref="Serializable&lt;T&gt;" /> instead.
+//	/// </summary>
+//	[Serializable]
+//	public class SerializableObject : GenericSerializable<object>
+//	{
+//		#region Constructors
 
-		protected internal override object CreateSerializableInstance()
-		{
-			if(this.InstanceIsSerializable)
-				return this.Instance;
+//		protected internal SerializableObject(object instance, ISerializationResolver serializationResolver, ICircularReferenceTracker circularReferenceTracker, bool investigateSerializability, IList<SerializationResult> investigationResult) : base(instance, serializationResolver, circularReferenceTracker, investigateSerializability, investigationResult) {}
 
-			var serializableFields = new List<SerializableField>();
+//		#endregion
 
-			if(this.Instance != null)
-			{
-				foreach(var fieldInformation in this.SerializationResolver.GetFieldsForSerialization(this.Instance.GetType()))
-				{
-					object fieldValue = fieldInformation.GetValue(this.Instance);
+//		#region Methods
 
-					if(fieldValue == null)
-						continue;
+//		protected internal override object CreateDeserializedInstance(ISerializationResolver serializationResolver)
+//		{
+//			if (serializationResolver == null)
+//				throw new ArgumentNullException("serializationResolver");
 
-					SerializableField serializableField = new SerializableField(fieldInformation, fieldValue, this.SerializationResolver, this.CircularReferenceTracker, this.InvestigateSerializabilityInternal, this.InvestigationResultInternal);
-					serializableField.PrepareForSerialization();
-					serializableFields.Add(serializableField);
-				}
-			}
+//			object instance = serializationResolver.CreateUninitializedObject(this.InstanceType);
 
-			return serializableFields.ToArray();
-		}
+//			foreach (SerializableField serializableField in (IEnumerable<SerializableField>)this.SerializableInstance)
+//			{
+//				serializableField.FieldInformation.SetValue(instance, serializableField.Instance);
+//			}
 
-		protected internal override object CreateDeserializedInstance(ISerializationResolver serializationResolver)
-		{
-			return null;
+//			return instance;
+//		}
 
-			//if(serializationResolver == null)
-			//	throw new ArgumentNullException("serializationResolver");
+//		protected internal override object CreateSerializableInstance()
+//		{
+//			if(this.InstanceIsSerializable)
+//				return this.Instance;
 
-			//object instance = serializationResolver.CreateUninitializedObject(this.InstanceType);
+//			var serializableFields = new List<SerializableField>();
 
-			//foreach (SerializableField serializableField in (IEnumerable<SerializableField>)this.SerializableInstance)
-			//{
-			//	serializableField.FieldInformation.SetValue(instance, serializableField.ins);
-			//	//deserializedField.FieldInformation.SetValue(instance, deserializedField.Instance);
-			//}
+//			if(this.Instance != null)
+//			{
+//				// ReSharper disable LoopCanBeConvertedToQuery
+//				foreach(var fieldInformation in this.SerializationResolver.GetFieldsForSerialization(this.Instance.GetType()))
+//				{
+//					object fieldValue = fieldInformation.GetValue(this.Instance);
 
-			//return instance;
-		}
-	}
-}
+//					if(fieldValue == null)
+//						continue;
+
+//					serializableFields.Add(new SerializableField(fieldInformation, fieldValue, this.SerializationResolver, this.CircularReferenceTracker, this.InvestigateSerializabilityInternal, this.InvestigationResultInternal));
+//				}
+//				// ReSharper restore LoopCanBeConvertedToQuery
+//			}
+
+//			return serializableFields.ToArray();
+//		}
+
+//		#endregion
+//	}
+//}
