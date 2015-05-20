@@ -47,6 +47,9 @@ namespace HansKindberg.Serialization.InversionOfControl
 
 		public virtual object GetService(Type serviceType)
 		{
+			if (serviceType == null)
+				throw new ArgumentNullException("serviceType");
+
 			if(typeof(ICircularReferenceTracker) == serviceType)
 				return new DefaultCircularReferenceTracker();
 
